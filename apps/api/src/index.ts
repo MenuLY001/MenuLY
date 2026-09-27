@@ -52,8 +52,10 @@ app.use('/api/admin/items', adminLimiter, itemsRouter);
 app.use('/api/admin/upload', adminLimiter, uploadRouter);
 app.use('/api/admin/restaurant', adminLimiter, restaurantRouter);
 
-// Health check
+// Health checks
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.get('/', (_req, res) => res.json({ status: 'ok', service: 'qr-menu-api' }));
 
 // ─── Error Handling ───────────────────────────────────────────────────────────
 
