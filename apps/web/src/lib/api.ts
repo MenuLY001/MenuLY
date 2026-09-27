@@ -3,7 +3,8 @@
  * Admin requests attach the Supabase JWT as a Bearer token.
  */
 
-const API_BASE = import.meta.env.API_URL || '/api'; // proxied via Vite in dev, or absolute URL in prod
+const _url = import.meta.env.API_URL || '';
+const API_BASE = _url.endsWith('/api') ? _url : (_url ? `${_url.replace(/\/$/, '')}/api` : '/api');
 
 async function request<T>(
   path: string,
