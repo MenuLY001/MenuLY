@@ -12,6 +12,7 @@ import platformRouter from './routes/platform';
 import { errorHandler, notFound } from './middleware/errorHandler';
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Railway/Render) for rate limiting
 const PORT = process.env.PORT ?? 3001;
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
