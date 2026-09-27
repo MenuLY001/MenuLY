@@ -18,8 +18,24 @@ const PORT = process.env.PORT ?? 3001;
 // ─── Middleware ───────────────────────────────────────────────────────────────
 
 const frontendUrl = (process.env.FRONTEND_URL ?? 'http://localhost:5173').replace(/\/$/, '');
+
+// Allow both apex and www variants so menuly.shop and www.menuly.shop both work
+const allowedOrigins = new Set<string>([frontendUrl]);
+try {
+  const u = new URL(frontendUrl);
+  if (u.hostname.startsWith('www.')) {
+    allowedOrigins.add(`${u.protocol}//${u.hostname.slice(4)}`);
+  } else {
+    allowedOrigins.add(`${u.protocol}//www.${u.hostname}`);
+  }
+} catch { /* not a valid URL, skip */ }
+
 app.use(cors({
-  origin: frontendUrl,
+  origin: (origin, cb) => {
+    // Allow requests with no origin (server-to-server, curl, etc.)
+    if (!origin || allowedOrigins.has(origin)) return cb(null, true);
+    cb(new Error(`CORS: origin '${origin}' not allowed`));
+  },
   credentials: true,
 }));
 
