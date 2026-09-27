@@ -1,183 +1,106 @@
-# QR Menu Platform
+<div align="center">
+  <br />
+  <h1>🍽️ MenuLY</h1>
+  <p><strong>A beautifully designed, multi-tenant QR-code menu platform for modern restaurants.</strong></p>
+  <br />
 
-A multi-tenant restaurant QR-menu platform. Each restaurant gets admin login + QR codes per table. Customers scan to browse the menu, build a cart, and show it to a waiter.
+  <!-- Badges -->
+  <p>
+    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Express.js-404D59?style=for-the-badge&logo=express" alt="Express" />
+    <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+    <img src="https://img.shields.io/badge/Turborepo-EF4444?style=for-the-badge&logo=turborepo&logoColor=white" alt="Turborepo" />
+  </p>
+</div>
 
-## Architecture
+<hr />
 
-```
-qr-menu-platform/
-├── apps/
-│   ├── api/        Node.js + Express + TypeScript — REST API
-│   └── web/        React + Vite — Admin dashboard + Public menu
-├── packages/
-│   └── types/      Shared TypeScript interfaces
-└── supabase/
-    ├── migrations/ SQL schema + RLS policies
-    └── seed.sql    Demo data
-```
+## 🌟 Overview
 
-## Prerequisites
+**MenuLY** is a high-performance, multi-tenant digital menu platform built for the modern dining experience. It allows restaurants to easily register, build their digital menus, upload item images, and instantly generate QR codes for tables. 
 
-- Node.js 18+
-- A [Supabase](https://supabase.com) project (free tier works)
+Customers scan the QR code to access a lightning-fast, beautifully designed, mobile-first menu where they can browse items, build an order cart, and display it directly to the waiter.
 
----
+## ✨ Key Features
 
-## 1. Supabase Setup
-
-### 1a. Run the migration
-
-In your Supabase SQL Editor, paste and run:
-
-```sql
--- contents of supabase/migrations/001_initial_schema.sql
-```
-
-Or use Supabase CLI:
-```bash
-supabase db push
-```
-
-### 1b. Create the storage bucket
-
-In Supabase Dashboard → Storage → New Bucket:
-- Name: `menu-images`
-- ✅ Public bucket (items need public URLs for the menu page)
-
-### 1c. Create an admin user
-
-In Supabase Dashboard → Authentication → Users → Invite User:
-- Enter the admin's email
-- They receive a magic link to set a password
-
-Then link them to a restaurant in the SQL Editor:
-```sql
-INSERT INTO restaurant_admins (user_id, restaurant_id)
-VALUES ('paste-user-uuid-here', 'paste-restaurant-uuid-here');
-```
-
-### 1d. Create a restaurant
-
-Either use the seed file (`supabase/seed.sql`) for demo data, or insert directly:
-```sql
-INSERT INTO restaurants (slug, name, theme_color)
-VALUES ('my-restaurant-abc1', 'My Restaurant', '#e67e22');
-```
-
-> **Slugs should be random and non-sequential.** Suggested format: `{name-kebab}-{4-char-random}`.
+- **📱 Mobile-First Customer Experience**: Smooth, native-like interface with tactile scroll-snapping, floating bottom carts, and interactive list/grid layouts.
+- **🎨 Dynamic Theming**: Customers can instantly toggle between a premium Dark Mode and a crisp Light Mode.
+- **🛒 Intelligent Cart & Ordering**: Customers can build their orders at the table and generate a high-contrast, full-screen "Waiter Display" to seamlessly place their order.
+- **🔐 Multi-Tenant Architecture**: Built from the ground up to support hundreds of unique restaurants concurrently, completely isolated from one another.
+- **🛡️ Secure Admin Dashboard**: Real-time CRUD operations for menu categories, items, and restaurant profiles protected by JWT authentication.
+- **☁️ Supabase Storage Integration**: Direct, secure image uploads for gorgeous menu photography.
+- **🔒 Hidden Registration**: A fully locked-down registration flow accessible only via a configurable cryptographically secure secret URL.
 
 ---
 
-## 2. Environment Variables
+## 🛠️ Technology Stack
 
-### API (`apps/api/.env`)
+This project is structured as a powerful **Monorepo** using [Turborepo](https://turbo.build/repo) for blazing-fast local development and builds.
+
+- **Frontend**: React, Vite, Custom CSS (No external bloat)
+- **Backend API**: Node.js, Express.js
+- **Database & Auth**: Supabase (PostgreSQL, Auth, Storage)
+- **Tooling**: TypeScript, Turborepo, NPM Workspaces
+
+---
+
+## 🚀 Local Development
+
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- A [Supabase](https://supabase.com/) account and project.
+
+### 2. Environment Setup
+Create a `.env` file in `apps/api/` and `apps/web/`:
+
+**`apps/api/.env`**
 ```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key   # Settings > API > service_role
 PORT=3001
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+PLATFORM_REGISTRATION_KEY=generate_a_random_32_char_string
 FRONTEND_URL=http://localhost:5173
 ```
 
-### Web (`apps/web/.env`)
+**`apps/web/.env`**
 ```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key              # Settings > API > anon key
-API_URL=http://localhost:3001
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_anon_key
+API_URL=/api
 ```
 
----
-
-## 3. Install & Run
+### 3. Install & Run
+Run everything concurrently with a single command from the root directory:
 
 ```bash
-# Install all dependencies (root installs everything via workspaces)
 npm install
-
-# Start both API and web in development mode
 npm run dev
-
-# Or start individually:
-npm run dev:api   # API on :3001
-npm run dev:web   # Vite on :5173
 ```
 
----
-
-## 4. URLs
-
-| Route | Description |
-|-------|-------------|
-| `/admin` | Admin login → dashboard |
-| `/menu/:slug?table=N` | Public customer menu |
-
-**QR Codes** are generated in Admin → QR Codes panel.
-Each table gets a unique QR linking to `/menu/{slug}?table={N}`.
+* The Frontend will run on `http://localhost:5173`
+* The Backend API will run on `http://localhost:3001`
 
 ---
 
-## Security Model
+## 📦 Deployment Strategy
 
-### Tenant Isolation
+Because of the monorepo structure and the Node.js Express backend (handling file uploads), we recommend a split deployment strategy for the best performance.
 
-| Layer | Mechanism |
-|-------|-----------|
-| **Public API** | `restaurant_id` derived from slug lookup — never from client |
-| **Admin API** | `restaurant_id` derived from JWT → `restaurant_admins` table lookup |
-| **Database RLS** | `restaurant_admins.user_id = auth.uid()` on all write policies |
-| **API server** | Service-role key on server only — anon key never touches data |
+### Frontend ➡️ Vercel
+1. Import the repository into Vercel.
+2. Set the Root Directory to `apps/web`.
+3. Add your Environment Variables (ensure `API_URL` points to your deployed backend, e.g., `https://api.yourdomain.com/api`).
+4. Vercel handles the Vite build automatically.
 
-### No Public Signup
-
-Admin accounts are created by the platform owner only.
-The `/admin` route shows a login form — no registration UI.
-
----
-
-## Module Architecture (Frontend)
-
-```
-/menu        — fetch & render categories/items for a given slug
-/cart        — CartContext (useReducer), pure functions, no network in phase 1
-/fulfillment — strategy pattern (DisplayToWaiter | BackendOrder)
-/table       — useTable() parses tableNo from URL params
-```
-
-Modules communicate only through typed interfaces. No module reaches into another's internals.
-
-### Adding Real Ordering (Phase 2)
-
-1. Flip `ordering_enabled = TRUE` for the restaurant in Supabase
-2. Implement `BackendOrderStrategy.submit()` in `apps/web/src/modules/fulfillment/strategy.ts`
-3. Add the `POST /api/restaurants/:id/orders` endpoint in `apps/api`
-4. Add `orders` + `order_items` tables + RLS policies
-5. Decide cart persistence (localStorage or server-side draft)
-
-That's it — no other code changes needed.
+### Backend ➡️ Railway (or Render)
+1. Import the repository into Railway.
+2. Railway will automatically detect the custom `Dockerfile` in the root of the repository, which intelligently builds only the backend and shared types.
+3. Add your backend `.env` variables to Railway.
+4. Railway will automatically expose the Express server.
 
 ---
 
-## Onboarding a New Restaurant
-
-```sql
--- 1. Create restaurant (generate a random slug)
-INSERT INTO restaurants (slug, name, theme_color)
-VALUES ('spice-house-7k9m', 'Spice House', '#c0392b')
-RETURNING id;
-
--- 2. Create admin user in Supabase Auth dashboard, then link:
-INSERT INTO restaurant_admins (user_id, restaurant_id)
-VALUES ('user-uuid', 'restaurant-uuid');
-```
-
-The admin can then log in at `/admin` and manage their menu.
-
----
-
-## Tech Stack
-
-- **Frontend**: React 18 + Vite + TypeScript
-- **Backend**: Node.js + Express + TypeScript
-- **DB / Auth / Storage**: Supabase (Postgres + GoTrue + S3-compatible)
-- **QR Generation**: `qrcode` npm package (client-side, no server needed)
-- **Monorepo**: npm workspaces
-"# MenuLY" 
+<div align="center">
+  <i>Designed & Built with ❤️ for better dining experiences.</i>
+</div>
