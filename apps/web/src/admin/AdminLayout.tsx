@@ -25,7 +25,17 @@ export function AdminLayout({ restaurant, activeTab, onTabChange, children }: Ad
       <aside className={`admin-sidebar ${mobileNavOpen ? 'admin-sidebar--open' : ''}`}>
         {/* Logo */}
         <div className="admin-sidebar__brand">
-          <span className="admin-sidebar__logo">🍽️</span>
+          <span className="admin-sidebar__logo">
+            {restaurant?.logo_url ? (
+              <img 
+                src={restaurant.logo_url} 
+                alt={`${restaurant.name} logo`} 
+                style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', display: 'block' }} 
+              />
+            ) : (
+              '🍽️'
+            )}
+          </span>
           <div>
             <div className="admin-sidebar__app-name">QR Menu</div>
             <div className="admin-sidebar__restaurant">{restaurant?.name ?? '…'}</div>
