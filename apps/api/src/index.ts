@@ -17,22 +17,30 @@ const PORT = process.env.PORT ?? 3001;
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 
-const frontendUrl = (process.env.FRONTEND_URL ?? 'http://localhost:5173').replace(/\/$/, '');
+// FRONTEND_URL supports comma-separated origins for multi-domain setups.
+// Each entry also auto-generates its www/apex counterpart.
+const rawOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:5173')
+  .split(',')
+  .map(s => s.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 
-// Allow both apex and www variants so menuly.shop and www.menuly.shop both work
-const allowedOrigins = new Set<string>([frontendUrl]);
-try {
-  const u = new URL(frontendUrl);
-  if (u.hostname.startsWith('www.')) {
-    allowedOrigins.add(`${u.protocol}//${u.hostname.slice(4)}`);
-  } else {
-    allowedOrigins.add(`${u.protocol}//www.${u.hostname}`);
-  }
-} catch { /* not a valid URL, skip */ }
+const allowedOrigins = new Set<string>(rawOrigins);
+for (const origin of rawOrigins) {
+  try {
+    const u = new URL(origin);
+    if (u.hostname.startsWith('www.')) {
+      allowedOrigins.add(`${u.protocol}//${u.hostname.slice(4)}`);
+    } else {
+      allowedOrigins.add(`${u.protocol}//www.${u.hostname}`);
+    }
+  } catch { /* not a valid URL, skip */ }
+}
+
+console.log('[API] Allowed CORS origins:', [...allowedOrigins].join(', '));
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (server-to-server, curl, etc.)
+    // Allow requests with no origin (server-to-server, curl, health checks, etc.)
     if (!origin || allowedOrigins.has(origin)) return cb(null, true);
     cb(new Error(`CORS: origin '${origin}' not allowed`));
   },
