@@ -85,18 +85,34 @@ npm run dev
 
 ## 📦 Deployment Strategy
 
-Because of the monorepo structure and the Node.js Express backend (handling file uploads), we recommend a split deployment strategy for the best performance.
+Because of the monorepo structure and the Node.js Express backend (handling file uploads), we use a split deployment strategy.
 
-### Frontend ➡️ Vercel
+### Frontend ➡️ Vercel (Custom Domain: [menuly.shop](https://menuly.shop))
 1. Import the repository into Vercel.
 2. Set the Root Directory to `apps/web`.
-3. Add your Environment Variables (ensure `API_URL` points to your deployed backend, e.g., `https://api.yourdomain.com/api`).
-4. Vercel handles the Vite build automatically.
+3. Add your custom domain `menuly.shop` in **Vercel → Settings → Domains**.
+4. In **GoDaddy DNS**, point:
+   - **A record** → `76.76.21.21` (Vercel IP)
+   - **CNAME record** for `www` → `cname.vercel-dns.com`
+5. Set these Environment Variables in Vercel:
+   ```env
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_ANON_KEY=your_anon_key
+   API_URL=https://menuly-production-5038.up.railway.app/api
+   ```
+6. Vercel handles the Vite build automatically.
 
-### Backend ➡️ Railway (or Render)
+### Backend ➡️ Railway
 1. Import the repository into Railway.
-2. Railway will automatically detect the custom `Dockerfile` in the root of the repository, which intelligently builds only the backend and shared types.
-3. Add your backend `.env` variables to Railway.
+2. Railway will automatically detect the custom `Dockerfile` in the root.
+3. Set these Environment Variables in Railway:
+   ```env
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+   PLATFORM_REGISTRATION_KEY=your_secret_key
+   FRONTEND_URL=https://menuly.shop
+   PORT=3001
+   ```
 4. Railway will automatically expose the Express server.
 
 ---
