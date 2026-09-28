@@ -13,6 +13,8 @@ interface ItemForm {
   price: string;
   image_url: string;
   is_available: boolean;
+  is_veg: boolean;
+  is_special: boolean;
 }
 
 const DEFAULT_FORM: ItemForm = {
@@ -22,6 +24,8 @@ const DEFAULT_FORM: ItemForm = {
   price: '',
   image_url: '',
   is_available: true,
+  is_veg: true,
+  is_special: false,
 };
 
 export function ItemsPanel() {
@@ -72,6 +76,8 @@ export function ItemsPanel() {
       price: String(item.price),
       image_url: item.image_url ?? '',
       is_available: item.is_available,
+      is_veg: item.is_veg ?? true,
+      is_special: item.is_special ?? false,
     });
     setModalOpen(true);
   };
@@ -104,6 +110,8 @@ export function ItemsPanel() {
         price,
         image_url: form.image_url || undefined,
         is_available: form.is_available,
+        is_veg: form.is_veg,
+        is_special: form.is_special,
       };
       if (editingItem) {
         const updated = await adminApi.updateItem(token, editingItem.id, payload);
@@ -285,6 +293,40 @@ export function ItemsPanel() {
                     <span className="toggle-btn__thumb" />
                   </button>
                 </div>
+                <div className="field" style={{ justifyContent: 'flex-end' }}>
+                  <label className="field__label">Veg / Non-Veg</label>
+                  <button
+                    type="button"
+                    className="veg-toggle"
+                    style={{
+                      background: form.is_veg ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+                      borderColor: form.is_veg ? '#22c55e' : '#ef4444',
+                      color: form.is_veg ? '#22c55e' : '#ef4444',
+                    }}
+                    onClick={() => setForm((f) => ({ ...f, is_veg: !f.is_veg }))}
+                  >
+                    <span style={{
+                      display: 'inline-block', width: 10, height: 10, borderRadius: '50%',
+                      background: form.is_veg ? '#22c55e' : '#ef4444', marginRight: 6,
+                    }} />
+                    {form.is_veg ? 'Veg' : 'Non-Veg'}
+                  </button>
+                </div>
+                <div className="field" style={{ justifyContent: 'flex-end' }}>
+                  <label className="field__label">Today&apos;s Special</label>
+                  <button
+                    type="button"
+                    className="veg-toggle"
+                    style={{
+                      background: form.is_special ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.05)',
+                      borderColor: form.is_special ? '#f59e0b' : 'rgba(255,255,255,0.2)',
+                      color: form.is_special ? '#f59e0b' : '#888',
+                    }}
+                    onClick={() => setForm((f) => ({ ...f, is_special: !f.is_special }))}
+                  >
+                    ⭐ {form.is_special ? 'Special' : 'Regular'}
+                  </button>
+                </div>
               </div>
 
               {/* Image upload */}
@@ -336,6 +378,8 @@ export function ItemsPanel() {
         .toggle-btn--on { background: var(--brand); }
         .toggle-btn__thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.2s; }
         .toggle-btn--on .toggle-btn__thumb { transform: translateX(22px); }
+        .veg-toggle { padding: 7px 14px; border-radius: 8px; border: 1.5px solid; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; transition: all 0.2s; font-family: inherit; }
+        .veg-toggle:hover { opacity: 0.85; }
       `}</style>
     </div>
   );

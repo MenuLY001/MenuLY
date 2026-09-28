@@ -29,6 +29,8 @@ export interface MenuItem {
   price: number;
   image_url: string | null;
   is_available: boolean;
+  is_veg: boolean | null;
+  is_special: boolean;
   sort_order: number;
 }
 
@@ -101,6 +103,8 @@ export interface CreateMenuItemPayload {
   price: number;
   image_url?: string;
   is_available?: boolean;
+  is_veg?: boolean;
+  is_special?: boolean;
   sort_order?: number;
 }
 
@@ -111,5 +115,7 @@ export interface UpdateMenuItemPayload {
   price?: number;
   image_url?: string;
   is_available?: boolean;
+  is_veg?: boolean;
+  is_special?: boolean;
   sort_order?: number;
 }

@@ -13,6 +13,8 @@ const createSchema = z.object({
   price: z.number().positive(),
   image_url: z.string().url().optional().nullable(),
   is_available: z.boolean().optional().default(true),
+  is_veg: z.boolean().optional().nullable(),
+  is_special: z.boolean().optional().default(false),
   sort_order: z.number().int().min(0).optional(),
 });
 

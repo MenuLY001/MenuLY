@@ -41,7 +41,10 @@ console.log('[API] Allowed CORS origins:', [...allowedOrigins].join(', '));
 app.use(cors({
   origin: (origin, cb) => {
     // Allow requests with no origin (server-to-server, curl, health checks, etc.)
-    if (!origin || allowedOrigins.has(origin)) return cb(null, true);
+    // Also allow any localhost port for local development convenience.
+    if (!origin || allowedOrigins.has(origin) || origin.startsWith('http://localhost:')) {
+      return cb(null, true);
+    }
     cb(new Error(`CORS: origin '${origin}' not allowed`));
   },
   credentials: true,

@@ -43,7 +43,7 @@ router.get('/:slug', async (req: Request, res: Response): Promise<void> => {
   // 3. Fetch available menu items scoped strictly to this restaurant_id
   const { data: items, error: itemsError } = await supabaseAdmin
     .from('menu_items')
-    .select('id, restaurant_id, category_id, name, description, price, image_url, is_available, sort_order')
+    .select('id, restaurant_id, category_id, name, description, price, image_url, is_available, is_veg, is_special, sort_order')
     .eq('restaurant_id', restaurantId)
     .eq('is_available', true)
     .order('sort_order', { ascending: true });
