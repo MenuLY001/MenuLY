@@ -11,6 +11,7 @@ import { ToastProvider } from '../../components/ToastContext';
 import { MenuSkeleton } from '../../components/SkeletonLoader';
 import { getFulfillmentStrategy } from '../fulfillment/strategy';
 import { CartState, PublicMenuResponse } from '@qr-menu/types';
+import { MenulyDarkTemplate } from './templates/MenulyDarkTemplate';
 
 /**
  * MenuPage — public customer-facing menu page.
@@ -103,15 +104,20 @@ export function MenuPage() {
         restaurantName={data.restaurant.name}
         tableNo={tableNo}
       >
-        <MenuPageInner
-          data={data}
-          tableNo={tableNo}
-          cartOpen={cartOpen}
-          setCartOpen={setCartOpen}
-          waiterCart={waiterCart}
-          setWaiterCart={setWaiterCart}
-          onShowToWaiter={handleShowToWaiter}
-        />
+        {/* Route to the appropriate template */}
+        {data.restaurant.menu_template === 'menuly-dark' ? (
+          <MenulyDarkTemplate data={data} tableNo={tableNo} />
+        ) : (
+          <MenuPageInner
+            data={data}
+            tableNo={tableNo}
+            cartOpen={cartOpen}
+            setCartOpen={setCartOpen}
+            waiterCart={waiterCart}
+            setWaiterCart={setWaiterCart}
+            onShowToWaiter={handleShowToWaiter}
+          />
+        )}
       </CartProvider>
     </ToastProvider>
   );

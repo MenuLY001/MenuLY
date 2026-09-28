@@ -14,6 +14,7 @@ export function SettingsPanel() {
   const [name, setName] = useState('');
   const [themeColor, setThemeColor] = useState('#e67e22');
   const [logoUrl, setLogoUrl] = useState('');
+  const [menuTemplate, setMenuTemplate] = useState<'classic' | 'menuly-dark'>('classic');
 
   // QR state
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -34,6 +35,7 @@ export function SettingsPanel() {
         setName(r.name);
         setThemeColor(r.theme_color);
         setLogoUrl(r.logo_url ?? '');
+        setMenuTemplate((r.menu_template as 'classic' | 'menuly-dark') ?? 'classic');
 
         // Generate QR immediately
         const menuUrl = `${window.location.origin}/menu/${r.slug}`;
@@ -73,6 +75,7 @@ export function SettingsPanel() {
         name: name.trim(),
         theme_color: themeColor,
         logo_url: logoUrl || undefined,
+        menu_template: menuTemplate,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -214,48 +217,108 @@ export function SettingsPanel() {
           </div>
         </form>
 
-        {/* ── Right: QR Code ───────────────────────────────────────────── */}
-        <div className="qr-section">
-          <h2 className="settings-section-title">Restaurant QR Code</h2>
-          <p className="qr-section__desc">
-            Print and display this QR code at your tables. Customers scan it to browse your menu.
-          </p>
+        {/* ── Right: QR Code + Template Picker ─────────────────────────── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Template Picker */}
+          <div className="template-picker">
+            <h2 className="settings-section-title">Menu Template</h2>
+            <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 12 }}>Choose how your public menu looks to customers.</p>
+            <div className="template-grid">
+              {/* Classic */}
+              <button
+                type="button"
+                className={`template-card ${menuTemplate === 'classic' ? 'template-card--active' : ''}`}
+                onClick={() => setMenuTemplate('classic')}
+              >
+                <div className="template-card__preview template-card__preview--classic">
+                  <div className="tp-classic__header">
+                    <div className="tp-dot" />
+                    <div className="tp-bar tp-bar--lg" />
+                  </div>
+                  <div className="tp-classic__row"><div className="tp-square" /><div style={{ flex: 1 }}><div className="tp-bar" /><div className="tp-bar tp-bar--sm" /></div></div>
+                  <div className="tp-classic__row"><div className="tp-square" /><div style={{ flex: 1 }}><div className="tp-bar" /><div className="tp-bar tp-bar--sm" /></div></div>
+                  <div className="tp-classic__row"><div className="tp-square" /><div style={{ flex: 1 }}><div className="tp-bar" /><div className="tp-bar tp-bar--sm" /></div></div>
+                </div>
+                <div className="template-card__meta">
+                  <div className="template-card__name">Classic</div>
+                  <div className="template-card__desc">Clean, light/dark with grid & list views</div>
+                </div>
+                {menuTemplate === 'classic' && <div className="template-card__check">✓</div>}
+              </button>
 
-          {qrDataUrl ? (
-            <div className="qr-card">
-              <div className="qr-card__header">
-                {logoUrl && (
-                  <img src={logoUrl} alt="" className="qr-card__logo" />
-                )}
-                <div className="qr-card__name">{name || restaurant?.name}</div>
-              </div>
-              <img
-                src={qrDataUrl}
-                alt="Menu QR Code"
-                className="qr-card__img"
-              />
-              <div className="qr-card__url">{qrMenuUrl}</div>
-              <button className="btn-primary qr-download-btn" onClick={downloadQR}>
-                ↓ Download QR Code
+              {/* Menuly Dark */}
+              <button
+                type="button"
+                className={`template-card ${menuTemplate === 'menuly-dark' ? 'template-card--active' : ''}`}
+                onClick={() => setMenuTemplate('menuly-dark')}
+              >
+                <div className="template-card__preview template-card__preview--menuly">
+                  <div className="tp-menuly__header">
+                    <div className="tp-menuly__logo" />
+                    <div className="tp-bar tp-bar--lg tp-bar--light" />
+                  </div>
+                  <div className="tp-menuly__search" />
+                  <div className="tp-menuly__tabs">
+                    <div className="tp-pill tp-pill--active" />
+                    <div className="tp-pill" />
+                    <div className="tp-pill" />
+                  </div>
+                  <div className="tp-menuly__row"><div className="tp-thumb" /><div style={{ flex: 1 }}><div className="tp-bar tp-bar--light" /><div className="tp-bar tp-bar--sm tp-bar--light" /></div></div>
+                  <div className="tp-menuly__row"><div className="tp-thumb" /><div style={{ flex: 1 }}><div className="tp-bar tp-bar--light" /><div className="tp-bar tp-bar--sm tp-bar--light" /></div></div>
+                </div>
+                <div className="template-card__meta">
+                  <div className="template-card__name">Menuly Dark ✨</div>
+                  <div className="template-card__desc">Modern dark UI with category tabs &amp; search</div>
+                </div>
+                {menuTemplate === 'menuly-dark' && <div className="template-card__check">✓</div>}
               </button>
             </div>
-          ) : (
-            <div className="qr-placeholder">
-              <div style={{ fontSize: 40, opacity: 0.3 }}>📱</div>
-              <p>Generating QR…</p>
-            </div>
-          )}
+          </div>
 
-          <div className="qr-tip">
-            <strong>💡 Tip:</strong> The QR links directly to your menu at<br />
-            <code>{qrMenuUrl || `${window.location.origin}/menu/${restaurant?.slug}`}</code>
+          {/* QR Code */}
+          <div className="qr-section">
+            <h2 className="settings-section-title">Restaurant QR Code</h2>
+            <p className="qr-section__desc">
+              Print and display this QR code at your tables. Customers scan it to browse your menu.
+            </p>
+
+            {qrDataUrl ? (
+              <div className="qr-card">
+                <div className="qr-card__header">
+                  {logoUrl && (
+                    <img src={logoUrl} alt="" className="qr-card__logo" />
+                  )}
+                  <div className="qr-card__name">{name || restaurant?.name}</div>
+                </div>
+                <img
+                  src={qrDataUrl}
+                  alt="Menu QR Code"
+                  className="qr-card__img"
+                />
+                <div className="qr-card__url">{qrMenuUrl}</div>
+                <button className="btn-primary qr-download-btn" onClick={downloadQR}>
+                  ↓ Download QR Code
+                </button>
+              </div>
+            ) : (
+              <div className="qr-placeholder">
+                <div style={{ fontSize: 40, opacity: 0.3 }}>📱</div>
+                <p>Generating QR…</p>
+              </div>
+            )}
+
+            <div className="qr-tip">
+              <strong>💡 Tip:</strong> The QR links directly to your menu at<br />
+              <code>{qrMenuUrl || `${window.location.origin}/menu/${restaurant?.slug}`}</code>
+            </div>
           </div>
         </div>
       </div>
 
+
       <AdminPanelStyles />
       <style>{`
-        .settings-layout { display: grid; grid-template-columns: 1fr 320px; gap: 32px; align-items: start; }
+        .settings-layout { display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: start; }
         @media (max-width: 860px) { .settings-layout { grid-template-columns: 1fr; } }
         .settings-form { display: flex; flex-direction: column; gap: 20px; }
         .settings-section-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
@@ -267,7 +330,39 @@ export function SettingsPanel() {
         .slug-note { font-size: 12px; color: #9ca3af; }
         .panel-success { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; }
 
-        .qr-section { display: flex; flex-direction: column; gap: 12px; }
+        /* Template Picker */
+        .template-picker { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        .template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .template-card { display: flex; flex-direction: column; gap: 0; border: 2px solid #e5e7eb; border-radius: 14px; overflow: hidden; cursor: pointer; background: #fafafa; transition: all 0.2s; position: relative; text-align: left; font-family: inherit; padding: 0; }
+        .template-card:hover { border-color: #6b7280; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .template-card--active { border-color: #e67e22; box-shadow: 0 0 0 3px rgba(230,126,34,0.18); }
+        .template-card__check { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; background: #e67e22; border-radius: 50%; color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .template-card__preview { height: 120px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .template-card__preview--classic { background: #f8f9fc; }
+        .template-card__preview--menuly { background: #0f0f13; }
+        .template-card__meta { padding: 10px 12px 12px; }
+        .template-card__name { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+        .template-card__desc { font-size: 11px; color: #9ca3af; margin-top: 2px; line-height: 1.4; }
+
+        /* Preview skeleton elements */
+        .tp-dot { width: 18px; height: 18px; border-radius: 50%; background: #e5e7eb; flex-shrink: 0; }
+        .tp-bar { height: 7px; border-radius: 4px; background: #e5e7eb; width: 80%; }
+        .tp-bar--lg { width: 90%; }
+        .tp-bar--sm { width: 55%; margin-top: 4px; }
+        .tp-bar--light { background: rgba(255,255,255,0.15); }
+        .tp-square { width: 24px; height: 24px; border-radius: 6px; background: #e5e7eb; flex-shrink: 0; }
+        .tp-thumb { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,0.12); flex-shrink: 0; }
+        .tp-classic__header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+        .tp-classic__row { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid #f0f0f0; }
+        .tp-menuly__header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+        .tp-menuly__logo { width: 16px; height: 16px; border-radius: 4px; background: #e67e22; flex-shrink: 0; }
+        .tp-menuly__search { height: 10px; border-radius: 5px; background: rgba(255,255,255,0.1); margin-bottom: 6px; }
+        .tp-menuly__tabs { display: flex; gap: 4px; margin-bottom: 6px; }
+        .tp-pill { height: 10px; width: 28px; border-radius: 5px; background: rgba(255,255,255,0.1); }
+        .tp-pill--active { background: #e67e22; }
+        .tp-menuly__row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
+
+        .qr-section { display: flex; flex-direction: column; gap: 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
         .qr-section__desc { font-size: 13px; color: #6b7280; line-height: 1.6; }
         .qr-card { background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
         .qr-card__header { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }

@@ -51,7 +51,7 @@ export const adminApi = {
   getRestaurant: (token: string) =>
     request<import('@qr-menu/types').Restaurant>('/admin/restaurant', {}, token),
 
-  updateRestaurant: (token: string, data: { name?: string; logo_url?: string; theme_color?: string }) =>
+  updateRestaurant: (token: string, data: { name?: string; logo_url?: string; theme_color?: string; menu_template?: string }) =>
     request<import('@qr-menu/types').Restaurant>('/admin/restaurant', {
       method: 'PATCH',
       body: JSON.stringify(data),

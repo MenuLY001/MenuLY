@@ -1,11 +1,14 @@
 // ─── DB Row Types ────────────────────────────────────────────────────────────
 
+export type MenuTemplate = 'classic' | 'menuly-dark';
+
 export interface Restaurant {
   id: string;
   slug: string;
   name: string;
   logo_url: string | null;
   theme_color: string;
+  menu_template: MenuTemplate;
   ordering_enabled: boolean;
   created_at: string;
 }
@@ -32,7 +35,7 @@ export interface MenuItem {
 // ─── API Response Types ───────────────────────────────────────────────────────
 
 export interface PublicMenuResponse {
-  restaurant: Pick<Restaurant, 'id' | 'name' | 'logo_url' | 'theme_color' | 'ordering_enabled'>;
+  restaurant: Pick<Restaurant, 'id' | 'name' | 'logo_url' | 'theme_color' | 'ordering_enabled' | 'menu_template'>;
   categories: (Category & { items: MenuItem[] })[];
 }
 

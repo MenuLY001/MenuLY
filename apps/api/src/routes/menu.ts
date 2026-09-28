@@ -17,7 +17,7 @@ router.get('/:slug', async (req: Request, res: Response): Promise<void> => {
   // 1. Resolve restaurant by slug — this is the only source of restaurant_id
   const { data: restaurant, error: restError } = await supabaseAdmin
     .from('restaurants')
-    .select('id, name, logo_url, theme_color, ordering_enabled')
+    .select('id, name, logo_url, theme_color, ordering_enabled, menu_template')
     .eq('slug', slug)
     .single();
 

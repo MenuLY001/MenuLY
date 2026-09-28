@@ -34,16 +34,22 @@ router.patch('/', async (req: Request, res: Response): Promise<void> => {
   const { restaurantId } = req.adminContext!;
 
   // Whitelist only updateable fields — never allow slug/id changes
-  const { name, logo_url, theme_color } = req.body as {
+  const { name, logo_url, theme_color, menu_template } = req.body as {
     name?: string;
     logo_url?: string;
     theme_color?: string;
+    menu_template?: string;
   };
+
+  const VALID_TEMPLATES = ['classic', 'menuly-dark'];
 
   const updates: Record<string, unknown> = {};
   if (name) updates.name = name;
   if (logo_url !== undefined) updates.logo_url = logo_url;
   if (theme_color) updates.theme_color = theme_color;
+  if (menu_template && VALID_TEMPLATES.includes(menu_template)) {
+    updates.menu_template = menu_template;
+  }
 
   if (Object.keys(updates).length === 0) {
     res.status(400).json({ error: 'No valid fields to update' });
