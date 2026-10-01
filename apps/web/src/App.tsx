@@ -5,6 +5,7 @@ import { Dashboard } from './admin/Dashboard';
 import { LoginPage } from './admin/LoginPage';
 import { AuthProvider, useAuth } from './admin/AuthContext';
 import { RegisterPage } from './platform/RegisterPage';
+import { VyomaBrand } from './components/VyomaBrand';
 
 function AdminRoute() {
   const { session, loading } = useAuth();
@@ -37,6 +38,8 @@ export function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
+          <div style={{ flex: 1 }}>
         <Routes>
           {/* Public menu route — no auth */}
           <Route path="/menu/:slug" element={<MenuPage />} />
@@ -68,6 +71,9 @@ export function App() {
             </div>
           } />
         </Routes>
+          </div>
+          <VyomaBrand />
+        </div>
       </BrowserRouter>
     </AuthProvider>
   );
