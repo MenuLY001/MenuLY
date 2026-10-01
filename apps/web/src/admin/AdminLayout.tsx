@@ -1,6 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { Restaurant } from '@qr-menu/types';
+import { VyomaBrand } from '../components/VyomaBrand';
 
 interface AdminLayoutProps {
   restaurant: Restaurant | null;
@@ -60,6 +61,10 @@ export function AdminLayout({ restaurant, activeTab, onTabChange, children }: Ad
         <button className="admin-signout" onClick={signOut}>
           <span>↩</span> Sign Out
         </button>
+
+        <div style={{ marginTop: 'auto' }}>
+          <VyomaBrand className="admin-vyoma-brand" />
+        </div>
       </aside>
 
       {/* Mobile overlay */}

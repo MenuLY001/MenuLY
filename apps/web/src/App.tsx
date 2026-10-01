@@ -5,7 +5,6 @@ import { Dashboard } from './admin/Dashboard';
 import { LoginPage } from './admin/LoginPage';
 import { AuthProvider, useAuth } from './admin/AuthContext';
 import { RegisterPage } from './platform/RegisterPage';
-import { VyomaBrand } from './components/VyomaBrand';
 
 function AdminRoute() {
   const { session, loading } = useAuth();
@@ -72,7 +71,6 @@ export function App() {
           } />
         </Routes>
           </div>
-          <VyomaBrand />
         </div>
       </BrowserRouter>
     </AuthProvider>

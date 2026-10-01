@@ -7,6 +7,7 @@ import { CartDrawer } from '../../cart/CartDrawer';
 import { WaiterDisplay } from '../../fulfillment/WaiterDisplay';
 import { getFulfillmentStrategy } from '../../fulfillment/strategy';
 import { formatPrice } from '../../../lib/format';
+import { VyomaBrand } from '../../../components/VyomaBrand';
 
 interface MenulyDarkTemplateProps {
   data: PublicMenuResponse;
@@ -117,7 +118,9 @@ export function MenulyDarkTemplate({ data, tableNo }: MenulyDarkTemplateProps) {
             Get Started &nbsp;→
           </button>
 
-          <p className="mly-splash__footer">Browse &nbsp;•&nbsp; Discover &nbsp;•&nbsp; Enjoy</p>
+          <div style={{ marginTop: 24 }}>
+            <VyomaBrand />
+          </div>
         </div>
       )}
 
@@ -261,6 +264,10 @@ export function MenulyDarkTemplate({ data, tableNo }: MenulyDarkTemplateProps) {
           )
         )}
       </main>
+
+      <div style={{ paddingBottom: 40, marginTop: -10 }}>
+        <VyomaBrand />
+      </div>
 
       <CartBadge onClick={() => setCartOpen(true)} />
       <CartDrawer
@@ -1007,7 +1014,12 @@ function MlyStyles({ brandColor }: { brandColor: string }) {
       .mly-item__add--added { background:#22c55e; font-size:16px; animation:mlyPop 0.4s ease; }
 
       /* ── Grid View Items ── */
-      .mly-item-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; padding:0 16px; }
+      .mly-item-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+        gap: 12px; 
+        padding: 0 16px; 
+      }
       .mly-grid-card {
         background:rgba(255,255,255,0.04);
         backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);

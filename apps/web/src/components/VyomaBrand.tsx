@@ -1,10 +1,10 @@
 import React from 'react';
 
-export function VyomaBrand() {
+export function VyomaBrand({ className = '' }: { className?: string }) {
   return (
-    <div className="vyoma-brand">
+    <div className={`vyoma-brand ${className}`}>
       <a href="https://vyoma.world" target="_blank" rel="noopener noreferrer">
-        <img src="/vyoma-logo.png" alt="Vyoma" className="vyoma-brand__logo" />
+        <img src="/vyoma-logo.jpg" alt="Vyoma" className="vyoma-brand__logo" />
         <span className="vyoma-brand__text">powered by <strong>vyoma.world</strong></span>
       </a>
       <style>{`
@@ -39,19 +39,12 @@ export function VyomaBrand() {
           border-radius: 4px;
         }
         .vyoma-brand__text {
-          color: var(--text-secondary, #9999aa);
+          color: currentColor;
+          opacity: 0.7;
         }
         .vyoma-brand__text strong {
-          color: var(--text-primary, #f2f2f5);
+          opacity: 1;
           font-weight: 700;
-        }
-        
-        /* Ensure it's legible in light mode as well */
-        .light-mode .vyoma-brand__text {
-          color: var(--text-muted, #5f6380);
-        }
-        .light-mode .vyoma-brand__text strong {
-          color: var(--text-primary, #1a1a2e);
         }
       `}</style>
     </div>
