@@ -17,5 +17,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       })
   );
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <QueryClientProvider client={queryClient}>{children as any}</QueryClientProvider>;
 }

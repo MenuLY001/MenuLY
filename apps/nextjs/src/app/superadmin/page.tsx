@@ -1,6 +1,5 @@
 'use client';
 import { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase-client';
 import type { DashboardData, FilterState, RestaurantRow, ToastType, Toast } from './components/types';
 import { downloadCSV } from './components/helpers';
