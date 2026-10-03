@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { X, User, Link as LinkIcon, Mail, Lock, Plus } from 'lucide-react';
 
 interface Props {
   restaurantId: string;
@@ -8,6 +9,87 @@ interface Props {
   onDone: (msg: string) => void;
   onError: (msg: string) => void;
   onClose: () => void;
+}
+
+const inp: React.CSSProperties = { width: '100%', padding: '10px 14px', borderRadius: 8, border: '1.5px solid rgba(255,255,255,.1)', fontSize: 14, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit', background: '#13131a', color: '#f2f2f5' };
+const btn: React.CSSProperties = { width: '100%', padding: '11px 0', background: '#e67e22', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' };
+const lbl: React.CSSProperties = { display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.6)' };
+
+export function AddRestaurantModal({ onClose, onDone, onError }: { onClose: () => void; onDone: (msg: string) => void; onError: (msg: string) => void }) {
+  const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name || !slug || !email || !password) return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurant_name: name, restaurant_slug: slug, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create');
+      onDone(`Created ${name} successfully!`);
+      onClose();
+    } catch (err: any) {
+      onError(err.message || 'Error creating restaurant');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <>
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(4px)', zIndex: 1000 }} onClick={onClose} />
+      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#1a1a24', width: '100%', maxWidth: 440, borderRadius: 16, padding: 32, zIndex: 1001, border: '1px solid rgba(255,255,255,.08)', boxShadow: '0 20px 60px rgba(0,0,0,.5)', animation: 'saFadeIn .2s ease-out' }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', color: 'rgba(255,255,255,.4)', cursor: 'pointer', padding: 4 }}><X size={20} /></button>
+        <h2 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 10 }}><Plus size={22} color="#a5b4fc" /> Add Restaurant</h2>
+        <p style={{ color: 'rgba(255,255,255,.4)', fontSize: 13, marginBottom: 24, lineHeight: 1.5 }}>Create a new restaurant and owner account. A free 7-day trial will be started automatically.</p>
+        
+        <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div style={{ flex: 1 }}>
+              <label style={lbl}>Restaurant Name</label>
+              <div style={{ position: 'relative' }}>
+                <User size={16} color="rgba(255,255,255,.3)" style={{ position: 'absolute', left: 12, top: 12 }} />
+                <input style={{ ...inp, paddingLeft: 38 }} placeholder="Spice Garden" value={name} onChange={e => setName(e.target.value)} required />
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={lbl}>URL Slug</label>
+              <div style={{ position: 'relative' }}>
+                <LinkIcon size={16} color="rgba(255,255,255,.3)" style={{ position: 'absolute', left: 12, top: 12 }} />
+                <input style={{ ...inp, paddingLeft: 38 }} placeholder="spice-garden" value={slug} onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} required />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label style={lbl}>Owner Email</label>
+            <div style={{ position: 'relative' }}>
+              <Mail size={16} color="rgba(255,255,255,.3)" style={{ position: 'absolute', left: 12, top: 12 }} />
+              <input type="email" style={{ ...inp, paddingLeft: 38 }} placeholder="owner@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
+            </div>
+          </div>
+          <div>
+            <label style={lbl}>Initial Password</label>
+            <div style={{ position: 'relative' }}>
+              <Lock size={16} color="rgba(255,255,255,.3)" style={{ position: 'absolute', left: 12, top: 12 }} />
+              <input type="text" style={{ ...inp, paddingLeft: 38 }} placeholder="Must be at least 8 chars" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} />
+            </div>
+          </div>
+          
+          <button type="submit" disabled={loading} style={{ ...btn, marginTop: 12, background: 'rgba(165,180,252,.1)', color: '#a5b4fc', border: '1px solid rgba(165,180,252,.2)' }}>
+            {loading ? 'Creating...' : 'Create Account & Restaurant'}
+          </button>
+        </form>
+      </div>
+    </>
+  );
 }
 
 export function ManageModal({ restaurantId, restaurantName, token, onDone, onError, onClose }: Props) {

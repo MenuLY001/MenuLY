@@ -6,9 +6,9 @@ import { downloadCSV } from './components/helpers';
 import { ToastStack } from './components/ToastStack';
 import { StatCards } from './components/StatCards';
 import { RestaurantTable } from './components/RestaurantTable';
-import { ManageModal, SuspendModal } from './components/Modals';
+import { ManageModal, SuspendModal, AddRestaurantModal } from './components/Modals';
 
-import { Shield, RefreshCw, Search, Download } from 'lucide-react';
+import { Shield, RefreshCw, Search, Download, Plus } from 'lucide-react';
 
 // ── Shared input/button styles ───────────────────────────────────────────────
 const inp: React.CSSProperties = { width: '100%', padding: '10px 14px', borderRadius: 8, border: '1.5px solid rgba(255,255,255,.1)', fontSize: 14, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit', background: '#13131a', color: '#f2f2f5' };
@@ -29,6 +29,7 @@ export default function SuperAdminPage() {
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   // Modal state
+  const [showAddModal, setShowAddModal] = useState(false);
   const [manageTarget, setManageTarget] = useState<RestaurantRow | null>(null);
   const [suspendTarget, setSuspendTarget] = useState<RestaurantRow | null>(null);
 
@@ -101,6 +102,13 @@ export default function SuperAdminPage() {
       <ToastStack toasts={toasts} />
 
       {/* Modals */}
+      {showAddModal && (
+        <AddRestaurantModal
+          onClose={() => setShowAddModal(false)}
+          onDone={msg => { addToast('success', 'Created', msg); refresh(); }}
+          onError={msg => addToast('error', 'Failed to Create', msg)}
+        />
+      )}
       {manageTarget && token && (
         <ManageModal
           restaurantId={manageTarget.id} restaurantName={manageTarget.name} token={token}
@@ -130,6 +138,10 @@ export default function SuperAdminPage() {
               Updated {lastRefreshed.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
+          <button onClick={() => setShowAddModal(true)} disabled={loading}
+            style={{ padding: '7px 16px', background: '#e67e22', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={16} strokeWidth={3} /> Add Restaurant
+          </button>
           <button onClick={refresh} disabled={loading}
             style={{ padding: '7px 16px', background: 'rgba(255,255,255,.07)', color: '#f2f2f5', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6 }}>
             <RefreshCw size={14} className={loading ? 'spin' : ''} /> Refresh

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, ExternalLink, Calendar, Mail, Link as LinkIcon, Lock, IndianRupee } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Calendar, Mail, Link as LinkIcon, Lock, IndianRupee, Edit } from 'lucide-react';
 import { fullDate, relativeDate } from '../../components/helpers';
 import type { RestaurantRow } from '../../components/types';
 
@@ -11,6 +11,17 @@ export default function RestaurantDetailPage() {
   const id = params.id as string;
   const [data, setData] = useState<{ restaurant: RestaurantRow, adminEmail?: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Edit State
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editSlug, setEditSlug] = useState('');
+  const [savingDetails, setSavingDetails] = useState(false);
+  
+  // Password State
+  const [newPassword, setNewPassword] = useState('');
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [pwdMsg, setPwdMsg] = useState('');
 
   useEffect(() => {
     async function load() {
@@ -23,7 +34,9 @@ export default function RestaurantDetailPage() {
         // We fetch from the single endpoint which we will create
         const apiRes = await fetch(`/api/superadmin/restaurants/${id}`, { headers: { Authorization: `Bearer ${token}` } });
         if (!apiRes.ok) throw new Error('Failed to load');
-        setData(await apiRes.json());
+        setData(d);
+        setEditName(d.restaurant.name);
+        setEditSlug(d.restaurant.slug);
       } catch (err) {
         console.error(err);
       } finally {
@@ -32,6 +45,48 @@ export default function RestaurantDetailPage() {
     }
     load();
   }, [id, router]);
+
+  async function handleSaveDetails() {
+    setSavingDetails(true);
+    try {
+      const token = localStorage.getItem('sb-access-token') || (await (await import('@/lib/supabase-client')).supabase.auth.getSession()).data.session?.access_token;
+      const res = await fetch(`/api/superadmin/restaurants/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: editName, slug: editSlug }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to update');
+      setIsEditing(false);
+      alert('Details updated successfully!');
+      // Reload page to get fresh data
+      window.location.reload();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSavingDetails(false);
+    }
+  }
+
+  async function handleResetPassword() {
+    if (newPassword.length < 8) return alert('Password must be at least 8 characters');
+    setSavingPassword(true);
+    try {
+      const token = localStorage.getItem('sb-access-token') || (await (await import('@/lib/supabase-client')).supabase.auth.getSession()).data.session?.access_token;
+      const res = await fetch(`/api/superadmin/restaurants/${id}/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ password: newPassword }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to reset password');
+      setNewPassword('');
+      setPwdMsg('Password updated successfully!');
+      setTimeout(() => setPwdMsg(''), 3000);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSavingPassword(false);
+    }
+  }
 
   if (loading) return <div style={{ padding: 40, color: '#fff', textAlign: 'center' }}>Loading...</div>;
   if (!data) return <div style={{ padding: 40, color: '#fff', textAlign: 'center' }}>Restaurant not found</div>;
@@ -60,11 +115,33 @@ export default function RestaurantDetailPage() {
             </a>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={() => setIsEditing(!isEditing)} style={{ padding: '8px 16px', background: 'transparent', color: '#a5b4fc', border: '1px solid rgba(165,180,252,.2)', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Edit size={14} /> Edit
+            </button>
             <button onClick={() => { localStorage.setItem('menuly_impersonate', r.id); router.push('/admin'); }} style={{ padding: '8px 16px', background: 'rgba(165,180,252,.1)', color: '#a5b4fc', border: '1px solid rgba(165,180,252,.2)', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
               <Lock size={14} /> Impersonate
             </button>
           </div>
         </div>
+
+        {isEditing && (
+          <div style={{ padding: 32, borderBottom: '1px solid rgba(255,255,255,.06)', background: '#13131a' }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 16px' }}>Edit Details</h3>
+            <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.6)' }}>Name</label>
+                <input value={editName} onChange={e => setEditName(e.target.value)} style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,.1)', background: '#1a1a24', color: '#fff', fontSize: 14 }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.6)' }}>Slug</label>
+                <input value={editSlug} onChange={e => setEditSlug(e.target.value)} style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,.1)', background: '#1a1a24', color: '#fff', fontSize: 14 }} />
+              </div>
+            </div>
+            <button onClick={handleSaveDetails} disabled={savingDetails} style={{ padding: '8px 20px', background: '#e67e22', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+              {savingDetails ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        )}
 
         {/* Info Grid */}
         <div style={{ padding: 32, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 32, borderBottom: '1px solid rgba(255,255,255,.06)' }}>
@@ -133,6 +210,23 @@ export default function RestaurantDetailPage() {
             )}
           </div>
         </div>
+
+        {/* Danger Zone */}
+        <div style={{ padding: 32, borderTop: '1px solid rgba(255,255,255,.06)' }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}><Lock size={18} color="#ef4444" /> Security</h2>
+          <div style={{ background: 'rgba(239,68,68,.05)', borderRadius: 12, padding: 24, border: '1px solid rgba(239,68,68,.2)' }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, margin: '0 0 8px', color: '#ef4444' }}>Reset Owner Password</h3>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,.5)', margin: '0 0 16px' }}>Set a new password for the owner account. They will be able to log in immediately with the new password.</p>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <input type="text" placeholder="New Password (min 8 chars)" value={newPassword} onChange={e => setNewPassword(e.target.value)} style={{ width: 240, padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,.1)', background: '#13131a', color: '#fff', fontSize: 14 }} />
+              <button onClick={handleResetPassword} disabled={savingPassword || newPassword.length < 8} style={{ padding: '10px 16px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', opacity: (savingPassword || newPassword.length < 8) ? 0.5 : 1 }}>
+                {savingPassword ? 'Resetting...' : 'Reset Password'}
+              </button>
+              {pwdMsg && <span style={{ color: '#4ade80', fontSize: 13, fontWeight: 600 }}>{pwdMsg}</span>}
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

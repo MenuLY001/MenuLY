@@ -60,3 +60,40 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    
+    const { data: adminCheck } = await supabaseAdmin.from('super_admins').select('*').eq('email', user.email).maybeSingle();
+    if (!adminCheck) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+    const params = await props.params;
+    const { id } = params;
+    const body = await req.json();
+
+    const allowed = ['name', 'slug'];
+    const update: any = {};
+    for (const key of allowed) {
+      if (key in body && body[key]) update[key] = body[key];
+    }
+
+    if (update.slug) {
+      const { data: existing } = await supabaseAdmin.from('restaurants').select('id').eq('slug', update.slug).neq('id', id).maybeSingle();
+      if (existing) return NextResponse.json({ error: 'Slug already taken' }, { status: 409 });
+    }
+
+    const { data, error } = await supabaseAdmin.from('restaurants').update(update).eq('id', id).select().single();
+    if (error) throw error;
+    
+    return NextResponse.json(data);
+  } catch (err: any) {
+    console.error('Failed to update restaurant:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
