@@ -63,23 +63,104 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
       const QRCodeMod = await import('qrcode');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const QRCode = (QRCodeMod as any).toDataURL ?? (QRCodeMod.default as any)?.toDataURL ?? (QRCodeMod as any).toDataURL;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const QRCodeStr = (QRCodeMod as any).toString ?? (QRCodeMod.default as any)?.toString ?? (QRCodeMod as any).toString;
       
-      let dataStr = '';
       if (format === 'svg') {
-        dataStr = await QRCodeStr(qrMenuUrl, { type: 'svg', margin: 2, errorCorrectionLevel: 'H', color: { dark: themeColor, light: '#ffffff' } });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const QRCodeStr = (QRCodeMod as any).toString ?? (QRCodeMod.default as any)?.toString ?? (QRCodeMod as any).toString;
+        let dataStr = await QRCodeStr(qrMenuUrl, { type: 'svg', margin: 2, errorCorrectionLevel: 'H', color: { dark: '#000000', light: '#ffffff' } });
         const blob = new Blob([dataStr], { type: 'image/svg+xml' });
-        dataStr = URL.createObjectURL(blob);
-      } else {
-        dataStr = await QRCode(qrMenuUrl, { width: 1024, margin: 2, errorCorrectionLevel: 'H', color: { dark: themeColor, light: '#ffffff' } });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `${restaurant.slug}-menu-qr.svg`; a.click();
+        return;
       }
 
+      // PNG Poster Generation
+      const qrDataUrl = await QRCode(qrMenuUrl, { width: 800, margin: 1, errorCorrectionLevel: 'H', color: { dark: '#000000', light: '#ffffff' } });
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas not supported');
+      
+      canvas.width = 1000;
+      canvas.height = 1200;
+      
+      // Background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Border
+      ctx.strokeStyle = '#1a1a2e';
+      ctx.lineWidth = 16;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(40, 40, canvas.width - 80, canvas.height - 80, 40);
+      else ctx.rect(40, 40, canvas.width - 80, canvas.height - 80);
+      ctx.stroke();
+
+      // Text Header
+      ctx.fillStyle = '#1a1a2e';
+      ctx.font = 'bold 64px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('SCAN FOR MENU', canvas.width / 2, 160);
+
+      ctx.font = '600 36px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = '#6b7280';
+      ctx.fillText(restaurant.name.toUpperCase(), canvas.width / 2, 230);
+
+      // Load QR Image
+      const qrImg = new Image();
+      await new Promise((res, rej) => { qrImg.onload = res; qrImg.onerror = rej; qrImg.src = qrDataUrl; });
+      
+      // Draw QR
+      const qrSize = 700;
+      const qrX = (canvas.width - qrSize) / 2;
+      const qrY = 320;
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+      // Load & Draw Logo
+      if (logoUrl) {
+        const logoImg = new Image();
+        logoImg.crossOrigin = 'Anonymous';
+        await new Promise((res) => {
+          logoImg.onload = res;
+          logoImg.onerror = res; // skip on error
+          logoImg.src = logoUrl;
+        });
+
+        if (logoImg.width > 0) {
+          const logoSize = 160;
+          const logoX = qrX + (qrSize - logoSize) / 2;
+          const logoY = qrY + (qrSize - logoSize) / 2;
+          
+          ctx.beginPath();
+          ctx.arc(logoX + logoSize/2, logoY + logoSize/2, logoSize/2 + 12, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+          
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(logoX + logoSize/2, logoY + logoSize/2, logoSize/2, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+          
+          const scale = Math.max(logoSize / logoImg.width, logoSize / logoImg.height);
+          const drawW = logoImg.width * scale;
+          const drawH = logoImg.height * scale;
+          const dx = logoX + (logoSize - drawW) / 2;
+          const dy = logoY + (logoSize - drawH) / 2;
+          ctx.drawImage(logoImg, dx, dy, drawW, drawH);
+          ctx.restore();
+        }
+      }
+
+      ctx.font = '500 24px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = '#9ca3af';
+      ctx.fillText('Powered by Menuly', canvas.width / 2, 1100);
+
+      const finalDataUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a'); 
-      a.href = dataStr; 
-      a.download = `${restaurant.slug}-menu-qr.${format}`; 
+      a.href = finalDataUrl; 
+      a.download = `${restaurant.slug}-menu-qr.png`; 
       a.click();
-    } catch { toast.error('Failed to download QR'); }
+    } catch (e) { console.error(e); toast.error('Failed to download QR'); }
   };
 
   const copyUrl = () => { navigator.clipboard.writeText(qrMenuUrl); toast.success('URL Copied'); };
