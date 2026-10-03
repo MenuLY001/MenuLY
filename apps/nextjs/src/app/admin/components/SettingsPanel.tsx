@@ -67,7 +67,7 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
       if (format === 'svg') {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const QRCodeStr = (QRCodeMod as any).toString ?? (QRCodeMod.default as any)?.toString ?? (QRCodeMod as any).toString;
-        let dataStr = await QRCodeStr(qrMenuUrl, { type: 'svg', margin: 2, errorCorrectionLevel: 'H', color: { dark: '#000000', light: '#ffffff' } });
+        const dataStr = await QRCodeStr(qrMenuUrl, { type: 'svg', margin: 2, errorCorrectionLevel: 'H', color: { dark: '#000000', light: '#ffffff' } });
         const blob = new Blob([dataStr], { type: 'image/svg+xml' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = `${restaurant.slug}-menu-qr.svg`; a.click();
