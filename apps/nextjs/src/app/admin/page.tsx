@@ -24,7 +24,9 @@ export default function AdminPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(prev => (prev?.user?.id === s?.user?.id ? prev : s));
+    });
     return () => subscription.unsubscribe();
   }, []);
 
