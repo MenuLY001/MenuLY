@@ -12,33 +12,12 @@ export function MenuClient({ restaurant, categories, items }: Props) {
   const [splashDone, setSplashDone] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchMode, setSearchMode] = useState(false);
-  const [activeCatId, setActiveCatId] = useState(categories[0]?.id || 'all');
+  const [activeCatId, setActiveCatId] = useState('all');
   const [activeFilter, setActiveFilter] = useState<'all' | 'veg'>('all');
   const [detailItem, setDetailItem] = useState<MenuItem | null>(null);
   const [menuSheetOpen, setMenuSheetOpen] = useState(false);
 
-  // Intersection Observer for scroll spy
-  useEffect(() => {
-    if (searchQuery) return;
-    const observer = new IntersectionObserver((entries) => {
-      let maxRatio = 0;
-      let mostVisible = '';
-      entries.forEach(entry => {
-        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-          maxRatio = entry.intersectionRatio;
-          mostVisible = entry.target.id.replace('cat-', '');
-        }
-      });
-      if (mostVisible) setActiveCatId(mostVisible);
-    }, { rootMargin: '-120px 0px -60% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] });
-    
-    categories.forEach(c => {
-      const el = document.getElementById(`cat-${c.id}`);
-      if (el) observer.observe(el);
-    });
-    
-    return () => observer.disconnect();
-  }, [categories, searchQuery]);
+
 
   // Set brand color
   useEffect(() => {
@@ -69,15 +48,11 @@ export function MenuClient({ restaurant, categories, items }: Props) {
   };
 
   const displayItems = getDisplayItems();
-  const displayCategories = searchQuery.trim() ? null : categories;
+  const displayCategories = searchQuery.trim() ? null : activeCatId === 'all' ? categories : categories.filter(c => c.id === activeCatId);
 
-  const scrollToCat = (id: string) => {
+  const selectCat = (id: string) => {
     setActiveCatId(id);
-    const el = document.getElementById(`cat-${id}`);
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 110;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setMenuSheetOpen(false);
   };
 
@@ -126,11 +101,18 @@ export function MenuClient({ restaurant, categories, items }: Props) {
           {!searchMode && (
             <div className="mly-header__bottom">
               <nav className="mly-cat-bar">
+                <button
+                  className={`mly-cat-pill${activeCatId === 'all' ? ' mly-cat-pill--active' : ''}`}
+                  onClick={() => selectCat('all')}
+                  style={activeCatId === 'all' ? { color: '#fff' } : {}}
+                >
+                  All
+                </button>
                 {categories.map(cat => (
                   <button 
                     key={cat.id} 
                     className={`mly-cat-pill${activeCatId === cat.id ? ' mly-cat-pill--active' : ''}`} 
-                    onClick={() => scrollToCat(cat.id)}
+                    onClick={() => selectCat(cat.id)}
                     style={activeCatId === cat.id ? { color: '#fff' } : {}}
                   >
                     {cat.name}
@@ -150,7 +132,7 @@ export function MenuClient({ restaurant, categories, items }: Props) {
 
         <div className="mly-container">
           {/* Today's Special */}
-          {!searchQuery && specialItems.length > 0 && (
+          {!searchQuery && activeCatId === 'all' && specialItems.length > 0 && (
             <section className="mly-special">
               <div className="mly-section-header">
                 <h2 className="mly-section-title">Today&apos;s Special</h2>
@@ -226,11 +208,15 @@ export function MenuClient({ restaurant, categories, items }: Props) {
                 </button>
               </div>
               <div className="mly-cat-sheet__list">
+                <button className="mly-cat-sheet__item" onClick={() => selectCat('all')}>
+                  <span className="mly-cat-sheet__name">All Categories</span>
+                  <span className="mly-cat-sheet__count">{items.length}</span>
+                </button>
                 {categories.map(cat => {
                   const count = items.filter(i => i.category_id === cat.id).length;
                   if (count === 0) return null;
                   return (
-                    <button key={cat.id} className="mly-cat-sheet__item" onClick={() => scrollToCat(cat.id)}>
+                    <button key={cat.id} className="mly-cat-sheet__item" onClick={() => selectCat(cat.id)}>
                       <span className="mly-cat-sheet__name">{cat.name}</span>
                       <span className="mly-cat-sheet__count">{count}</span>
                     </button>
