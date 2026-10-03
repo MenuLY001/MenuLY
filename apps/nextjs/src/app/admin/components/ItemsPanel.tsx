@@ -1,9 +1,9 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
-import { type Category, type MenuItem } from './types';
-import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, EmptyState, FormModal, apiFetch } from './shared';
+import { useState, useRef } from 'react';
+import { type MenuItem } from './types';
+import { useToast, inp, btnP, btnG, lbl, Spinner, EmptyState, FormModal, apiFetch } from './shared';
 import { Pencil, Trash2, Search, GripVertical } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -141,7 +141,7 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const handleDragEnd = async (event: any) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
       const oldIndex = items.findIndex(i => i.id === active.id);
@@ -231,6 +231,7 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
                     {uploading ? (
                       <Spinner />
                     ) : form.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={form.image_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <div style={{ color: '#9ca3af', textAlign: 'center', fontSize: 12, padding: 8 }}>

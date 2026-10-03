@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase-client';
 import type { Session } from '@supabase/supabase-js';
 import Script from 'next/script';
 
-import { type Tab, type Restaurant } from './components/types';
+import { type Tab } from './components/types';
 import { useToast, TC, Spinner, apiFetch } from './components/shared';
 import { DashboardPanel } from './components/DashboardPanel';
 import { CategoriesPanel } from './components/CategoriesPanel';
@@ -19,7 +19,7 @@ import { useQueryClient } from '@tanstack/react-query';
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [tab, setTab] = useState<Tab>('dashboard');
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   const toastObj = useToast();
   const { toasts } = toastObj;
   const queryClient = useQueryClient();

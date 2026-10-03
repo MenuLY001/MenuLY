@@ -61,7 +61,9 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
     if (!restaurant) return;
     try {
       const QRCodeMod = await import('qrcode');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const QRCode = (QRCodeMod as any).toDataURL ?? (QRCodeMod.default as any)?.toDataURL ?? (QRCodeMod as any).toDataURL;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const QRCodeStr = (QRCodeMod as any).toString ?? (QRCodeMod.default as any)?.toString ?? (QRCodeMod as any).toString;
       
       let dataStr = '';
@@ -77,7 +79,7 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
       a.href = dataStr; 
       a.download = `${restaurant.slug}-menu-qr.${format}`; 
       a.click();
-    } catch (e) { toast.error('Failed to download QR'); }
+    } catch { toast.error('Failed to download QR'); }
   };
 
   const copyUrl = () => { navigator.clipboard.writeText(qrMenuUrl); toast.success('URL Copied'); };

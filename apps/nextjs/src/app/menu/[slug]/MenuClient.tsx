@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { MenuItem, Props } from './components/types';
 import { SplashScreen } from './components/SplashScreen';
 import { ItemDetailSheet } from './components/ItemDetailSheet';

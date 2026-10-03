@@ -1,7 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+
 import { type Restaurant } from './types';
-import { useToast, BRAND, Spinner } from './shared';
+import { BRAND, Spinner } from './shared';
 import { CheckCircle2, Circle, ExternalLink, QrCode, Smartphone } from 'lucide-react';
 import { useCategories, useItems } from './hooks';
 
@@ -25,7 +25,7 @@ export function DashboardPanel({ token, onNavigate, rest }: { token: string; onN
     <div className="panel" style={{ gap: 32 }}>
       <div>
         <h1 className="panel__title" style={{ fontSize: 28 }}>Welcome back, {rest.name}! 👋</h1>
-        <p className="panel__subtitle">Here's what's happening with your menu today.</p>
+        <p className="panel__subtitle">Here&apos;s what&apos;s happening with your menu today.</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
@@ -41,7 +41,7 @@ export function DashboardPanel({ token, onNavigate, rest }: { token: string; onN
           <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 4 }}>Organized for easy browsing</div>
         </div>
         <div style={{ background: '#fff', padding: 24, borderRadius: 16, border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,.03)' }}>
-          <div style={{ color: '#6b7280', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Today's QR Scans</div>
+          <div style={{ color: '#6b7280', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Today&apos;s QR Scans</div>
           <div style={{ fontSize: 32, fontWeight: 800, color: '#1a1a2e' }}>--</div>
           <div style={{ fontSize: 13, color: '#f59e0b', marginTop: 4, fontWeight: 600 }}>Analytics coming soon 🚀</div>
         </div>

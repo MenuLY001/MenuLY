@@ -13,7 +13,7 @@ async function main() {
   const { data: subs } = await supabase.from('subscriptions').select('*');
   const { data: rests } = await supabase.from('restaurants').select('*');
   const { data: pays } = await supabase.from('payments').select('*');
-  const { data: items, error: itemsErr } = await supabase.from('menu_items').select('*');
+  // const { data: items, error: itemsErr } = await supabase.from('menu_items').select('*');
   
   console.log('Subscriptions:', JSON.stringify(subs, null, 2));
   console.log('Restaurants:', JSON.stringify(rests, null, 2));
