@@ -8,6 +8,7 @@ import { ToastStack } from './components/ToastStack';
 import { StatCards } from './components/StatCards';
 import { RestaurantTable } from './components/RestaurantTable';
 import { ManageModal, SuspendModal, AddRestaurantModal } from './components/Modals';
+import { RevenueTab } from './components/RevenueTab';
 
 import { Shield, RefreshCw, Search, Download, Plus } from 'lucide-react';
 
@@ -17,6 +18,7 @@ const btn: React.CSSProperties = { width: '100%', padding: '11px 0', background:
 
 export default function SuperAdminPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'restaurants' | 'revenue'>('restaurants');
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -174,16 +176,17 @@ export default function SuperAdminPage() {
 
       {/* Tabs */}
       <div style={{ padding: '0 24px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', gap: 24 }}>
-        <div style={{ padding: '16px 0', color: '#a5b4fc', borderBottom: '2px solid #a5b4fc', fontSize: 14, fontWeight: 600, cursor: 'default' }}>Restaurants</div>
-        <div style={{ padding: '16px 0', color: 'rgba(255,255,255,.5)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }} onClick={() => router.push('/superadmin/revenue')}>Revenue & Analytics</div>
+        <div style={{ padding: '16px 0', color: activeTab === 'restaurants' ? '#a5b4fc' : 'rgba(255,255,255,.5)', borderBottom: activeTab === 'restaurants' ? '2px solid #a5b4fc' : 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }} onClick={() => setActiveTab('restaurants')}>Restaurants</div>
+        <div style={{ padding: '16px 0', color: activeTab === 'revenue' ? '#a5b4fc' : 'rgba(255,255,255,.5)', borderBottom: activeTab === 'revenue' ? '2px solid #a5b4fc' : 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }} onClick={() => setActiveTab('revenue')}>Revenue & Analytics</div>
       </div>
 
-      {/* Stat Cards */}
-      {stats && <StatCards stats={stats} activeFilter={filter} onFilter={f => { setFilter(f); setSearch(''); }} />}
+      <div style={{ display: activeTab === 'restaurants' ? 'block' : 'none' }}>
+        {/* Stat Cards */}
+        {stats && <StatCards stats={stats} activeFilter={filter} onFilter={f => { setFilter(f); setSearch(''); }} />}
 
-      {/* Table Card */}
-      <div style={{ margin: '20px 24px', background: '#1a1a24', borderRadius: 14, border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden' }}>
-        {/* Table Toolbar */}
+        {/* Table Card */}
+        <div style={{ margin: '20px 24px', background: '#1a1a24', borderRadius: 14, border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden' }}>
+          {/* Table Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', flexWrap: 'wrap', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
           <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#f2f2f5', flex: 1 }}>All Restaurants</h2>
 
@@ -231,7 +234,10 @@ export default function SuperAdminPage() {
             onManage={r => setManageTarget(r)}
           />
         )}
+        </div>
       </div>
+
+      <RevenueTab token={token} isActive={activeTab === 'revenue'} />
 
       <style>{`
         @keyframes saFadeIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
