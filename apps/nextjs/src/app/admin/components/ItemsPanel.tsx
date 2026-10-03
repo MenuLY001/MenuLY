@@ -14,7 +14,7 @@ function SortableMenuItem({ item, catName, onToggle, onEdit, onDelete, showDrag 
   return (
     <div ref={setNodeRef} style={style} className={`item-row ${isDragging ? 'is-dragging' : ''}`}>
       {showDrag && (
-        <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '12px 8px', color: '#9ca3af', display: 'flex', alignItems: 'center', marginLeft: -8 }}>
+        <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '12px 8px', color: '#9ca3af', display: 'flex', alignItems: 'center', marginLeft: -8, touchAction: 'none' }}>
           <GripVertical size={18} />
         </div>
       )}

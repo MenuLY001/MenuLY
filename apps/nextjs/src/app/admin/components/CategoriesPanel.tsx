@@ -13,7 +13,7 @@ function SortableCategoryItem({ category, onEdit, onDelete }: { category: Catego
   
   return (
     <div ref={setNodeRef} style={style} className={`item-row ${isDragging ? 'is-dragging' : ''}`}>
-      <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '12px 8px', color: '#9ca3af', display: 'flex', alignItems: 'center' }}>
+      <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '12px 8px', color: '#9ca3af', display: 'flex', alignItems: 'center', touchAction: 'none' }}>
         <GripVertical size={18} />
       </div>
       <span className="item-row__name">{category.name}</span>
