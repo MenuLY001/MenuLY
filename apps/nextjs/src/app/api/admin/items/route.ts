@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     const { restaurantId } = await getAdminContext(req);
     const { data, error } = await supabaseAdmin
-      .from('menu_items').select('*').eq('restaurant_id', restaurantId).order('created_at');
+      .from('menu_items').select('*').eq('restaurant_id', restaurantId).order('sort_order');
     if (error) throw error;
     return NextResponse.json(data);
   } catch (e) {
