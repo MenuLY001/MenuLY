@@ -15,6 +15,7 @@ import { SignInScreen } from './components/SignInScreen';
 import { LayoutDashboard, List, Settings, CreditCard, ExternalLink, LogOut, Home, X as XIcon } from 'lucide-react';
 import { useRestaurant } from './components/hooks';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 // ── Announcement Banner ────────────────────────────────────────────────────────
 const A_TYPE_STYLES = {
@@ -69,6 +70,7 @@ export default function AdminPage() {
   const toastObj = useToast();
   const { toasts } = toastObj;
   const queryClient = useQueryClient();
+  const router = useRouter();
   const token = session?.access_token;
 
   const prefetchCategories = () => {
@@ -100,7 +102,7 @@ export default function AdminPage() {
       {isImpersonating && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 40, background: '#ef4444', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, fontWeight: 700, fontSize: 13, gap: 12 }}>
           ⚠️ You are currently impersonating a restaurant. 
-          <button onClick={() => { localStorage.removeItem('menuly_impersonate'); window.location.href = '/superadmin'; }} style={{ padding: '4px 12px', background: 'rgba(255,255,255,.2)', border: 'none', borderRadius: 4, color: '#fff', fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={() => { localStorage.removeItem('menuly_impersonate'); router.push('/superadmin'); }} style={{ padding: '4px 12px', background: 'rgba(255,255,255,.2)', border: 'none', borderRadius: 4, color: '#fff', fontWeight: 600, cursor: 'pointer' }}>
             Stop Impersonating
           </button>
         </div>

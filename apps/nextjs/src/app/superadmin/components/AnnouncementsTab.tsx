@@ -30,19 +30,22 @@ export function AnnouncementsTab({ token, isActive }: { token: string; isActive:
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/superadmin/announcements', { headers: { Authorization: `Bearer ${token}` } });
-      const json = await res.json();
-      setAnnouncements(Array.isArray(json) ? json : []);
-    } catch { /* ignore */ } finally { setLoading(false); }
-  };
+  const [refreshKey, setRefreshKey] = useState(0);
+  const load = () => setRefreshKey(k => k + 1);
 
   useEffect(() => {
-    if (token && isActive) void load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, isActive]);
+    let mounted = true;
+    async function fetchAnnouncements() {
+      if (mounted && refreshKey > 0) setLoading(true);
+      try {
+        const res = await fetch('/api/superadmin/announcements', { headers: { Authorization: `Bearer ${token}` } });
+        const json = await res.json();
+        if (mounted) setAnnouncements(Array.isArray(json) ? json : []);
+      } catch { /* ignore */ } finally { if (mounted) setLoading(false); }
+    }
+    if (token && isActive) void fetchAnnouncements();
+    return () => { mounted = false; };
+  }, [token, isActive, refreshKey]);
 
   if (!isActive) return null;
 

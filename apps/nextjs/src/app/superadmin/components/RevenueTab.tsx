@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { IndianRupee, Clock, TrendingUp, Users, ArrowUpRight, MessageSquare, Download } from 'lucide-react';
+import { IndianRupee, Clock, TrendingUp, Users, MessageSquare, Download } from 'lucide-react';
 
 function fmt(paise: number) {
   return (paise / 100).toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
@@ -83,6 +83,7 @@ export function RevenueTab({ token, isActive }: { token: string; isActive: boole
     if (token && isActive && !data) {
       void load();
     }
+    return () => { mounted = false; };
   }, [token, isActive, data]);
 
   return (
