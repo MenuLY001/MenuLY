@@ -27,7 +27,10 @@ export default function RevenuePage() {
       try {
         const { data: sessionData } = await supabase.auth.getSession();
         const token = sessionData?.session?.access_token;
-        if (!token) {
+        const lastLogin = localStorage.getItem('menuly_sa_last_login');
+        const isExpired = !lastLogin || (Date.now() - parseInt(lastLogin, 10) >= 30 * 60 * 1000);
+
+        if (!token || isExpired) {
           router.push('/superadmin');
           return;
         }

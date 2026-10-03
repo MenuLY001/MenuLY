@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase-client';
 import type { DashboardData, FilterState, RestaurantRow, ToastType, Toast } from './components/types';
@@ -43,6 +43,19 @@ export default function SuperAdminPage() {
   }, []);
 
   // ── Auth ───────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted && data?.session?.access_token) {
+        const lastLogin = localStorage.getItem('menuly_sa_last_login');
+        if (lastLogin && (Date.now() - parseInt(lastLogin, 10) < 30 * 60 * 1000)) {
+          setToken(data.session.access_token);
+        }
+      }
+    });
+    return () => { mounted = false; };
+  }, []);
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault(); setLoggingIn(true); setLoginError('');
     try {
@@ -52,6 +65,7 @@ export default function SuperAdminPage() {
       if (res.status === 403) throw new Error('This account is not a super admin.');
       if (!res.ok) throw new Error('Could not load dashboard.');
       setToken(auth.session.access_token);
+      localStorage.setItem('menuly_sa_last_login', Date.now().toString());
       setData(await res.json());
       setLastRefreshed(new Date());
     } catch (err) {
@@ -68,6 +82,12 @@ export default function SuperAdminPage() {
       setLastRefreshed(new Date());
     } finally { setLoading(false); }
   }, [token]);
+
+  useEffect(() => {
+    if (token && !data && !loading && !loggingIn) {
+      void refresh();
+    }
+  }, [token, data, loading, loggingIn, refresh]);
 
   // ── Actions ────────────────────────────────────────────────────────────────
   async function handleActivate(id: string, name: string) {
