@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase-client';
 import type { Session } from '@supabase/supabase-js';
+import Script from 'next/script';
 
 import { type Tab, type Restaurant } from './components/types';
 import { useToast, TC, Spinner, apiFetch } from './components/shared';
@@ -140,6 +141,7 @@ export default function AdminPage() {
 
         {/* Content */}
         <div style={{ flex: 1, padding: '24px 32px 100px', maxWidth: 1200, margin: '0 auto', width: '100%' }} className="admin-content">
+          <Script src="https://checkout.razorpay.com/v1/checkout.js" />
           {tab === 'dashboard'  && <DashboardPanel  token={token} onNavigate={(t) => setTab(t as Tab)} />}
           {tab === 'categories' && <CategoriesPanel token={token} toast={toastObj} />}
           {tab === 'items'      && <ItemsPanel      token={token} toast={toastObj} />}
