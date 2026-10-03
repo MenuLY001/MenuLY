@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { MenuItem } from './types';
 import { fmt } from './helpers';
 import { VegDot } from './VegDot';
@@ -7,8 +7,13 @@ import { VegDot } from './VegDot';
 export function ItemDetailSheet({ item, brand, onClose }: { item: MenuItem | null; brand: string; onClose: () => void }) {
   const [qty, setQty] = useState(1);
   const [imgError, setImgError] = useState(false);
+  const prevItemId = useRef<string | undefined>(undefined);
 
-  useEffect(() => { if (item) { setQty(1); setImgError(false); } }, [item?.id]);
+  // Reset qty/imgError when a new item opens — use ref to detect id change without an effect
+  if (item?.id !== prevItemId.current) {
+    prevItemId.current = item?.id;
+    if (item) { setQty(1); setImgError(false); }
+  }
   useEffect(() => {
     if (!item) return;
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };

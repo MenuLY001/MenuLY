@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { type Category, type MenuItem, type ToastType } from './types';
+import { useState, useEffect, useRef } from 'react';
+import { type Category, type MenuItem } from './types';
 import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, EmptyState, Modal, apiFetch } from './shared';
 
 const EMPTY_FORM = { category_id: '', name: '', description: '', price: '', image_url: '', is_available: true, is_veg: true, is_special: false };
@@ -17,18 +17,23 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
   const [filterCat, setFilterCat] = useState('all');
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [id, cd] = await Promise.all([
-        apiFetch(token, '/api/admin/items'),
-        apiFetch(token, '/api/admin/categories'),
-      ]);
-      setItems(Array.isArray(id) ? id : []);
-      setCats(Array.isArray(cd) ? cd : []);
-    } catch { setItems([]); setCats([]); } finally { setLoading(false); }
+  useEffect(() => {
+    let cancelled = false;
+    Promise.resolve().then(() => { if (!cancelled) setLoading(true); });
+    Promise.all([
+      apiFetch(token, '/api/admin/items'),
+      apiFetch(token, '/api/admin/categories'),
+    ])
+      .then(([id, cd]) => {
+        if (!cancelled) {
+          setItems(Array.isArray(id) ? id : []);
+          setCats(Array.isArray(cd) ? cd : []);
+        }
+      })
+      .catch(() => { if (!cancelled) { setItems([]); setCats([]); } })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [token]);
-  useEffect(() => { load(); }, [load]);
 
   const openCreate = () => { setEditing(null); setForm({ ...EMPTY_FORM, category_id: cats[0]?.id ?? '' }); setModal(true); };
   const openEdit = (item: MenuItem) => {

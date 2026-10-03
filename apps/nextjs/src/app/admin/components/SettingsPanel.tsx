@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { type Restaurant, type ToastType } from './types';
+import { type Restaurant } from './types';
 import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, apiFetch } from './shared';
 
 export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: string; toast: ReturnType<typeof useToast>; onRestaurantUpdate: (r: Restaurant) => void }) {

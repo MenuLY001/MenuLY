@@ -9,6 +9,7 @@ import { CategoriesPanel } from './components/CategoriesPanel';
 import { ItemsPanel } from './components/ItemsPanel';
 import { SettingsPanel } from './components/SettingsPanel';
 import { BillingPanel } from './components/BillingPanel';
+import { SignInScreen } from './components/SignInScreen';
 
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
@@ -26,35 +27,34 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (!session?.access_token) { setLoading(false); return; }
-    setLoading(true);
-    apiFetch(session.access_token, '/api/admin/restaurant')
+    const token = session?.access_token;
+    let cancelled = false;
+    if (!token) {
+      Promise.resolve().then(() => { if (!cancelled) setLoading(false); });
+      return () => { cancelled = true; };
+    }
+    Promise.resolve().then(() => { if (!cancelled) setLoading(true); });
+    apiFetch(token, '/api/admin/restaurant')
       .then(async r => {
-        if (r && r.id !== undefined) setRestaurant(r);
-        else {
-          const create = await apiFetch(session.access_token, '/api/admin/restaurant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'My Restaurant' }) });
-          setRestaurant(create);
+        if (cancelled) return;
+        if (r && r.id !== undefined) {
+          setRestaurant(r);
+        } else {
+          const create = await apiFetch(token, '/api/admin/restaurant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'My Restaurant' }) });
+          if (!cancelled) setRestaurant(create);
         }
-        setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [session]);
 
   if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Spinner /></div>;
 
   if (!session) {
-    return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8f9fc', padding: 20 }}>
-        <div style={{ textAlign: 'center', maxWidth: 400, width: '100%' }}>
-          <div style={{ width: 64, height: 64, background: '#fff', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, margin: '0 auto 24px', boxShadow: '0 4px 20px rgba(0,0,0,.08)' }}>🔒</div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px', color: '#1a1a2e' }}>Admin Access</h1>
-          <p style={{ color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>Please sign in to manage your digital menu and settings.</p>
-          <a href="/register" style={{ display: 'inline-block', padding: '12px 24px', background: '#1a1a2e', color: '#fff', textDecoration: 'none', borderRadius: 10, fontWeight: 700, transition: 'transform .1s', boxShadow: '0 4px 12px rgba(26,26,46,.2)' }}
-             onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.96)')} onMouseUp={e => (e.currentTarget.style.transform = '')}>Sign In / Register</a>
-        </div>
-      </div>
-    );
+    return <SignInScreen />;
   }
+
 
   const token = session.access_token;
 

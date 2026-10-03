@@ -1,7 +1,7 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
-import { type Category, type ToastType } from './types';
-import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, EmptyState, Modal, apiFetch } from './shared';
+import { useState, useEffect } from 'react';
+import { type Category } from './types';
+import { useToast, inp, btnP, btnG, lbl, Spinner, EmptyState, Modal, apiFetch } from './shared';
 
 export function CategoriesPanel({ token, toast }: { token: string; toast: ReturnType<typeof useToast> }) {
   const [cats, setCats] = useState<Category[]>([]);
@@ -11,12 +11,15 @@ export function CategoriesPanel({ token, toast }: { token: string; toast: Return
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try { const d = await apiFetch(token, '/api/admin/categories'); setCats(Array.isArray(d) ? d : []); }
-    catch { setCats([]); } finally { setLoading(false); }
+  useEffect(() => {
+    let cancelled = false;
+    Promise.resolve().then(() => { if (!cancelled) setLoading(true); });
+    apiFetch(token, '/api/admin/categories')
+      .then(d => { if (!cancelled) setCats(Array.isArray(d) ? d : []); })
+      .catch(() => { if (!cancelled) setCats([]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [token]);
-  useEffect(() => { load(); }, [load]);
 
   const openCreate = () => { setEditing(null); setName(''); setModal(true); };
   const openEdit = (c: Category) => { setEditing(c); setName(c.name); setModal(true); };

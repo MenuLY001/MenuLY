@@ -1,6 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
-import { type ToastType } from './types';
+import { useState, useEffect } from 'react';
 import { useToast, BRAND, btnP, Spinner, Modal, apiFetch, fmtDate, daysLeft } from './shared';
 
 export function BillingPanel({ token, toast }: { token: string; toast: ReturnType<typeof useToast> }) {
@@ -8,13 +7,18 @@ export function BillingPanel({ token, toast }: { token: string; toast: ReturnTyp
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const load = () => setRefreshKey(k => k + 1);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try { const d = await apiFetch(token, '/api/admin/billing'); setBilling(d && !d.error ? d : null); }
-    catch { setBilling(null); } finally { setLoading(false); }
-  }, [token]);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    let cancelled = false;
+    Promise.resolve().then(() => { if (!cancelled) setLoading(true); });
+    apiFetch(token, '/api/admin/billing')
+      .then(d => { if (!cancelled) setBilling(d && !d.error ? d : null); })
+      .catch(() => { if (!cancelled) setBilling(null); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [token, refreshKey]);
 
   const status = (billing?.status as string) ?? '';
   const sub = billing?.subscription as Record<string, unknown> | null;
