@@ -13,6 +13,8 @@ interface Props {
   onActivate: (id: string, name: string) => void;
   onSuspend: (r: RestaurantRow) => void;
   onManage: (r: RestaurantRow) => void;
+  onSoftDelete: (id: string, name: string) => void;
+  onRestore: (id: string, name: string) => void;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
@@ -20,6 +22,7 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }
   trialing:  { label: 'Trial',      bg: 'rgba(234,179,8,.15)',   color: '#facc15' },
   suspended: { label: 'Suspended',  bg: 'rgba(239,68,68,.15)',   color: '#f87171' },
   cancelled: { label: 'Cancelled',  bg: 'rgba(255,255,255,.08)', color: '#a1a1aa' },
+  deleted:   { label: 'Deleted',    bg: 'rgba(239,68,68,.15)',   color: '#f87171' },
 };
 
 function TrialIndicator({ trialEndsAt, status }: { trialEndsAt: string | null; status: string }) {
@@ -34,7 +37,7 @@ function TrialIndicator({ trialEndsAt, status }: { trialEndsAt: string | null; s
   );
 }
 
-export function RestaurantTable({ restaurants, filter, search, actionLoading, onActivate, onSuspend, onManage }: Props) {
+export function RestaurantTable({ restaurants, filter, search, actionLoading, onActivate, onSuspend, onManage, onSoftDelete, onRestore }: Props) {
   const router = useRouter();
   const [sortKey, setSortKey] = useState<SortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -48,7 +51,11 @@ export function RestaurantTable({ restaurants, filter, search, actionLoading, on
   }
 
   const filtered = restaurants
-    .filter(r => filter === 'all' || r.status === filter)
+    .filter(r => {
+      if (filter === 'deleted') return r.deleted_at !== null;
+      if (r.deleted_at !== null) return false;
+      return filter === 'all' || r.status === filter;
+    })
     .filter(r => !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.slug.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       let av: string | number = '', bv: string | number = '';
@@ -121,7 +128,9 @@ export function RestaurantTable({ restaurants, filter, search, actionLoading, on
                   {/* Plan & Status */}
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 12, fontWeight: 700, background: sc.bg, color: sc.color }}>{sc.label}</span>
+                      <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 12, fontWeight: 700, background: r.deleted_at ? STATUS_CONFIG.deleted.bg : sc.bg, color: r.deleted_at ? STATUS_CONFIG.deleted.color : sc.color }}>
+                        {r.deleted_at ? STATUS_CONFIG.deleted.label : sc.label}
+                      </span>
                       <TrialIndicator trialEndsAt={r.trial_ends_at} status={r.status} />
                     </div>
                     {sub && <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginTop: 4 }}>₹299/mo · {sub.razorpay_subscription_id.slice(0, 18)}</div>}
@@ -152,23 +161,40 @@ export function RestaurantTable({ restaurants, filter, search, actionLoading, on
                   {/* Actions */}
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-                      {r.status !== 'active' && (
-                        <button onClick={(e) => { e.stopPropagation(); onActivate(r.id, r.name); }} disabled={!!actionLoading}
-                          style={{ padding: '5px 12px', background: 'rgba(34,197,94,.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,.25)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity .15s' }}>
-                          {actionLoading === r.id + 'active' ? '…' : 'Activate'}
-                        </button>
-                      )}
-                      <button onClick={(e) => { e.stopPropagation(); onManage(r); }} disabled={!!actionLoading}
-                        style={{ padding: '5px 12px', background: 'rgba(165,180,252,.1)', color: '#a5b4fc', border: '1px solid rgba(165,180,252,.2)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
-                        Manage
-                      </button>
-                      {r.status !== 'suspended' && (
-                        <button onClick={(e) => { e.stopPropagation(); onSuspend(r); }} disabled={!!actionLoading}
-                          style={{ padding: '5px 12px', background: 'transparent', color: 'rgba(248,113,113,.6)', border: '1px solid rgba(248,113,113,.2)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,.15)'; (e.currentTarget as HTMLElement).style.color = '#f87171'; }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(248,113,113,.6)'; }}>
-                          {actionLoading === r.id + 'suspended' ? '…' : 'Suspend'}
-                        </button>
+                      {r.deleted_at ? (
+                        <>
+                          <button onClick={(e) => { e.stopPropagation(); onRestore(r.id, r.name); }} disabled={!!actionLoading}
+                            style={{ padding: '5px 12px', background: 'rgba(34,197,94,.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,.25)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            {actionLoading === r.id + 'restore' ? '…' : 'Restore'}
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {r.status !== 'active' && (
+                            <button onClick={(e) => { e.stopPropagation(); onActivate(r.id, r.name); }} disabled={!!actionLoading}
+                              style={{ padding: '5px 12px', background: 'rgba(34,197,94,.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,.25)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity .15s' }}>
+                              {actionLoading === r.id + 'active' ? '…' : 'Activate'}
+                            </button>
+                          )}
+                          <button onClick={(e) => { e.stopPropagation(); onManage(r); }} disabled={!!actionLoading}
+                            style={{ padding: '5px 12px', background: 'rgba(165,180,252,.1)', color: '#a5b4fc', border: '1px solid rgba(165,180,252,.2)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            Manage
+                          </button>
+                          {r.status !== 'suspended' && (
+                            <button onClick={(e) => { e.stopPropagation(); onSuspend(r); }} disabled={!!actionLoading}
+                              style={{ padding: '5px 12px', background: 'transparent', color: 'rgba(248,113,113,.6)', border: '1px solid rgba(248,113,113,.2)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s' }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,.15)'; (e.currentTarget as HTMLElement).style.color = '#f87171'; }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(248,113,113,.6)'; }}>
+                              {actionLoading === r.id + 'suspended' ? '…' : 'Suspend'}
+                            </button>
+                          )}
+                          <button onClick={(e) => { e.stopPropagation(); onSoftDelete(r.id, r.name); }} disabled={!!actionLoading}
+                            style={{ padding: '5px 12px', background: 'transparent', color: 'rgba(248,113,113,.6)', border: '1px solid transparent', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,.15)'; (e.currentTarget as HTMLElement).style.color = '#f87171'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(248,113,113,.6)'; }}>
+                            {actionLoading === r.id + 'delete' ? '…' : 'Delete'}
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>

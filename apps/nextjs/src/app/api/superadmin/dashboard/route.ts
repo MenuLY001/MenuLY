@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       { data: payments },
       { count: totalUsers },
     ] = await Promise.all([
-      supabaseAdmin.from('restaurants').select('id, name, slug, status, trial_ends_at, created_at').order('created_at', { ascending: false }),
+      supabaseAdmin.from('restaurants').select('id, name, slug, status, trial_ends_at, created_at, deleted_at').order('created_at', { ascending: false }),
       supabaseAdmin.from('subscriptions').select('restaurant_id, status, razorpay_subscription_id, current_period_end'),
       supabaseAdmin.from('payments').select('restaurant_id, amount_paise, status, created_at').eq('status', 'captured').order('created_at', { ascending: false }).limit(50),
       supabaseAdmin.from('restaurant_admins').select('*', { count: 'exact', head: true }),

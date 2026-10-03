@@ -17,7 +17,6 @@ const inp: React.CSSProperties = { width: '100%', padding: '10px 14px', borderRa
 const btn: React.CSSProperties = { width: '100%', padding: '11px 0', background: '#e67e22', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' };
 
 export default function SuperAdminPage() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'restaurants' | 'revenue'>('restaurants');
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState('');
@@ -100,6 +99,30 @@ export default function SuperAdminPage() {
       await refresh();
       addToast('success', 'Activated', `${name} is now active.`);
     } catch { addToast('error', 'Failed', 'Could not activate.'); }
+    finally { setActionLoading(null); }
+  }
+
+  async function handleSoftDelete(id: string, name: string) {
+    if (!token) return;
+    if (!confirm(`Are you sure you want to delete ${name}? This can be undone from the Deleted tab.`)) return;
+    setActionLoading(id + 'delete');
+    try {
+      const res = await fetch(`/api/superadmin/restaurants/${id}/soft-delete`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete' }) });
+      if (!res.ok) throw new Error();
+      await refresh();
+      addToast('success', 'Deleted', `${name} has been archived.`);
+    } catch { addToast('error', 'Failed', 'Could not delete.'); }
+    finally { setActionLoading(null); }
+  }
+
+  async function handleRestore(id: string, name: string) {
+    if (!token) return; setActionLoading(id + 'restore');
+    try {
+      const res = await fetch(`/api/superadmin/restaurants/${id}/soft-delete`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'restore' }) });
+      if (!res.ok) throw new Error();
+      await refresh();
+      addToast('success', 'Restored', `${name} is back.`);
+    } catch { addToast('error', 'Failed', 'Could not restore.'); }
     finally { setActionLoading(null); }
   }
 
@@ -232,6 +255,8 @@ export default function SuperAdminPage() {
             onActivate={handleActivate}
             onSuspend={r => setSuspendTarget(r)}
             onManage={r => setManageTarget(r)}
+            onSoftDelete={handleSoftDelete}
+            onRestore={handleRestore}
           />
         )}
         </div>

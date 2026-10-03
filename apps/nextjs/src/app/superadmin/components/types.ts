@@ -5,6 +5,7 @@ export interface RestaurantRow {
   status: string;
   trial_ends_at: string | null;
   created_at: string;
+  deleted_at: string | null;
   subscription: {
     status: string;
     razorpay_subscription_id: string;
@@ -26,7 +27,7 @@ export interface DashboardData {
   restaurants: RestaurantRow[];
 }
 
-export type FilterState = 'all' | 'active' | 'trialing' | 'suspended' | 'cancelled';
+export type FilterState = 'all' | 'active' | 'trialing' | 'suspended' | 'cancelled' | 'deleted';
 export type SortKey = 'name' | 'status' | 'created_at' | 'trial_ends_at';
 export type SortDir = 'asc' | 'desc';
 export type ToastType = 'success' | 'error' | 'info';
