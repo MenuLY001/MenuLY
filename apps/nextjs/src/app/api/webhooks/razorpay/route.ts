@@ -62,12 +62,26 @@ async function handleSubscriptionEnded(payload: Record<string, unknown>, eventTy
   if (!subId) return;
   const restaurantId = await getRestaurantIdBySubscription(subId);
   if (!restaurantId) return;
+  
+  const { data: sub } = await supabaseAdmin
+    .from('subscriptions')
+    .select('current_period_end')
+    .eq('razorpay_subscription_id', subId)
+    .single();
+
+  const isExpired = sub?.current_period_end ? new Date(sub.current_period_end).getTime() <= Date.now() : true;
   const isCancelled = eventType === 'subscription.cancelled';
+  
   await supabaseAdmin.from('subscriptions').update({
     status: isCancelled ? 'cancelled' : 'completed',
     cancelled_at: new Date().toISOString(),
   }).eq('razorpay_subscription_id', subId);
-  await supabaseAdmin.from('restaurants').update({ status: isCancelled ? 'cancelled' : 'active' }).eq('id', restaurantId);
+  
+  if (isCancelled && !isExpired) {
+    console.log(`[Webhook] Restaurant ${restaurantId} kept active (paid until ${sub?.current_period_end})`);
+  } else {
+    await supabaseAdmin.from('restaurants').update({ status: isCancelled ? 'cancelled' : 'active' }).eq('id', restaurantId);
+  }
 }
 
 async function handleSubscriptionPaused(payload: Record<string, unknown>) {

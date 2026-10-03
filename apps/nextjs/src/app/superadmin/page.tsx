@@ -19,8 +19,8 @@ const TOAST_COLORS = {
 };
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  active:    { bg:'#dcfce7', color:'#166534' }, trialing: { bg:'#fef9c3', color:'#854d0e' },
-  suspended: { bg:'#fee2e2', color:'#991b1b' }, cancelled: { bg:'#f3f4f6', color:'#6b7280' },
+  active:    { bg:'rgba(34,197,94,.15)', color:'#4ade80' }, trialing: { bg:'rgba(234,179,8,.15)', color:'#facc15' },
+  suspended: { bg:'rgba(239,68,68,.15)', color:'#f87171' }, cancelled: { bg:'rgba(255,255,255,.1)', color:'#a1a1aa' },
 };
 
 export default function SuperAdminPage() {
@@ -85,15 +85,38 @@ export default function SuperAdminPage() {
     finally { setActionLoading(null); }
   }
 
+  function downloadCSV() {
+    const rs = data?.restaurants;
+    if (!rs || rs.length === 0) return;
+    const headers = ['Name', 'Slug', 'Status', 'Subscription', 'Trial Ends', 'Created At'];
+    const rows = rs.map(r => [
+      `"${r.name.replace(/"/g, '""')}"`,
+      r.slug,
+      r.status,
+      r.subscription?.status ?? 'None',
+      r.trial_ends_at ? new Date(r.trial_ends_at).toISOString().split('T')[0] : '—',
+      new Date(r.created_at).toISOString().split('T')[0]
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `menuly_restaurants_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   if (!token) return (
-    <div style={{ minHeight:'100dvh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f8fafc' }}>
-      <div style={{ background:'#fff', borderRadius:16, padding:36, width:360, boxShadow:'0 4px 24px rgba(0,0,0,.10)', textAlign:'center' }}>
+    <div style={{ minHeight:'100dvh', display:'flex', alignItems:'center', justifyContent:'center', background:'#0f0f13', color:'#f2f2f5' }}>
+      <div style={{ background:'#1a1a24', borderRadius:16, padding:36, width:360, border:'1px solid rgba(255,255,255,.08)', textAlign:'center' }}>
         <div style={{ fontSize:36, marginBottom:8 }}>🛡️</div>
-        <h1 style={{ fontSize:22, fontWeight:700, margin:'0 0 4px' }}>Super Admin</h1>
-        <p style={{ color:'#6b7280', fontSize:14, marginBottom:24 }}>Menuly Platform Control</p>
+        <h1 style={{ fontSize:22, fontWeight:700, margin:'0 0 4px', color:'#f2f2f5' }}>Super Admin</h1>
+        <p style={{ color:'rgba(255,255,255,.5)', fontSize:14, marginBottom:24 }}>Menuly Platform Control</p>
         <form onSubmit={handleLogin} style={{ display:'flex', flexDirection:'column', gap:12 }}>
-          <input style={inp} type="email" placeholder="Admin email" value={email} onChange={e=>setEmail(e.target.value)} required />
-          <input style={inp} type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
+          <input style={{...inp, background:'#13131a', color:'#f2f2f5', borderColor:'rgba(255,255,255,.1)'}} type="email" placeholder="Admin email" value={email} onChange={e=>setEmail(e.target.value)} required />
+          <input style={{...inp, background:'#13131a', color:'#f2f2f5', borderColor:'rgba(255,255,255,.1)'}} type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
           {loginError && <p style={{ color:'#ef4444', fontSize:13, margin:0 }}>{loginError}</p>}
           <button type="submit" style={btn} disabled={loggingIn}>{loggingIn ? 'Signing in…' : 'Sign in'}</button>
         </form>
@@ -104,21 +127,21 @@ export default function SuperAdminPage() {
   const { stats, restaurants } = data ?? { stats: null, restaurants: [] };
 
   return (
-    <div style={{ minHeight:'100dvh', background:'#f8fafc', fontFamily:'Inter,sans-serif' }}>
+    <div style={{ minHeight:'100dvh', background:'#0f0f13', color:'#f2f2f5', fontFamily:'Inter,sans-serif' }}>
       {/* Toast */}
       <div style={{ position:'fixed', top:20, right:20, zIndex:9999, display:'flex', flexDirection:'column', gap:10 }}>
         {toasts.map(t => {
           const c = TOAST_COLORS[t.type];
-          return <div key={t.id} style={{ background:c.bg, border:`1.5px solid ${c.border}`, borderRadius:12, padding:'14px 16px', display:'flex', gap:10, maxWidth:380, boxShadow:'0 8px 24px rgba(0,0,0,.1)' }}>
+          return <div key={t.id} style={{ background:c.bg, border:`1.5px solid ${c.border}`, borderRadius:12, padding:'14px 16px', display:'flex', gap:10, maxWidth:380, boxShadow:'0 8px 24px rgba(0,0,0,.3)' }}>
             <span style={{ fontSize:18 }}>{c.icon}</span>
-            <div><div style={{ fontWeight:700, fontSize:13, color:c.color }}>{t.title}</div>{t.msg && <div style={{ fontSize:12, color:'#374151', marginTop:2 }}>{t.msg}</div>}</div>
+            <div><div style={{ fontWeight:700, fontSize:13, color:c.color }}>{t.title}</div>{t.msg && <div style={{ fontSize:12, color:c.color, opacity:0.8, marginTop:2 }}>{t.msg}</div>}</div>
           </div>;
         })}
       </div>
 
-      <div style={{ background:'#1e293b', color:'#fff', padding:'14px 28px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+      <div style={{ background:'#1a1a24', color:'#f2f2f5', padding:'14px 28px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid rgba(255,255,255,.08)' }}>
         <span style={{ fontWeight:700, fontSize:18 }}>🛡️ Menuly Super Admin</span>
-        <button onClick={refresh} disabled={loading} style={{ padding:'6px 14px', background:'#f3f4f6', border:'none', borderRadius:8, fontWeight:600, fontSize:13, cursor:'pointer' }}>
+        <button onClick={refresh} disabled={loading} style={{ padding:'6px 14px', background:'rgba(255,255,255,.1)', color:'#f2f2f5', border:'none', borderRadius:8, fontWeight:600, fontSize:13, cursor:'pointer' }}>
           {loading ? 'Refreshing…' : '↻ Refresh'}
         </button>
       </div>
@@ -132,45 +155,50 @@ export default function SuperAdminPage() {
             { label:'Suspended',         value:stats.suspendedCount,   icon:'🔒' },
             { label:'Total Revenue',     value:`₹${Math.round(stats.totalRevenuePaise/100).toLocaleString('en-IN')}`, icon:'💰' },
           ].map(c => (
-            <div key={c.label} style={{ background:'#fff', borderRadius:12, padding:20, boxShadow:'0 1px 4px rgba(0,0,0,.07)', display:'flex', flexDirection:'column', gap:4 }}>
+            <div key={c.label} style={{ background:'#1a1a24', borderRadius:12, padding:20, border:'1px solid rgba(255,255,255,.08)', display:'flex', flexDirection:'column', gap:4 }}>
               <div style={{ fontSize:28 }}>{c.icon}</div>
-              <div style={{ fontSize:26, fontWeight:700 }}>{c.value}</div>
-              <div style={{ fontSize:12, color:'#6b7280' }}>{c.label}</div>
+              <div style={{ fontSize:26, fontWeight:700, color:'#f2f2f5' }}>{c.value}</div>
+              <div style={{ fontSize:12, color:'rgba(255,255,255,.5)' }}>{c.label}</div>
             </div>
           ))}
         </div>
       )}
 
-      <div style={{ background:'#fff', borderRadius:12, margin:'20px 28px', boxShadow:'0 1px 4px rgba(0,0,0,.07)', overflow:'hidden' }}>
-        <h2 style={{ fontSize:15, fontWeight:700, padding:'16px 20px 0', margin:0 }}>All Restaurants</h2>
+      <div style={{ background:'#1a1a24', borderRadius:12, margin:'20px 28px', border:'1px solid rgba(255,255,255,.08)', overflow:'hidden' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px 12px' }}>
+          <h2 style={{ fontSize:15, fontWeight:700, margin:0, color:'#f2f2f5' }}>All Restaurants</h2>
+          <button onClick={downloadCSV} disabled={!restaurants || restaurants.length === 0} style={{ padding:'6px 14px', background:'rgba(255,255,255,.05)', color:'#f2f2f5', border:'1px solid rgba(255,255,255,.1)', borderRadius:8, fontWeight:600, fontSize:12, cursor:'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 14 }}>⬇️</span> Download CSV
+          </button>
+        </div>
         <div style={{ overflowX:'auto' }}>
           <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
             <thead>
               <tr>{['Name / Slug','Status','Subscription','Trial Ends','Created','Actions'].map(h => (
-                <th key={h} style={{ padding:'10px 16px', textAlign:'left', background:'#f8fafc', color:'#374151', fontWeight:600, borderBottom:'1px solid #e5e7eb', fontSize:12 }}>{h}</th>
+                <th key={h} style={{ padding:'10px 16px', textAlign:'left', background:'#13131a', color:'rgba(255,255,255,.5)', fontWeight:600, borderBottom:'1px solid rgba(255,255,255,.08)', fontSize:12 }}>{h}</th>
               ))}</tr>
             </thead>
             <tbody>
               {(restaurants as RestaurantRow[]).map(r => {
-                const sc = STATUS_COLORS[r.status] ?? { bg:'#f3f4f6', color:'#374151' };
+                const sc = STATUS_COLORS[r.status] ?? { bg:'rgba(255,255,255,.1)', color:'#f2f2f5' };
                 return (
-                  <tr key={r.id} style={{ borderBottom:'1px solid #f1f5f9' }}>
+                  <tr key={r.id} style={{ borderBottom:'1px solid rgba(255,255,255,.04)' }}>
                     <td style={{ padding:'12px 16px' }}>
-                      <div style={{ fontWeight:600 }}>{r.name}</div>
+                      <div style={{ fontWeight:600, color:'#f2f2f5' }}>{r.name}</div>
                       <a href={`/menu/${r.slug}`} target="_blank" rel="noreferrer" style={{ fontSize:12, color:'#e67e22' }}>{r.slug}</a>
                     </td>
                     <td style={{ padding:'12px 16px' }}>
                       <span style={{ display:'inline-block', padding:'2px 10px', borderRadius:999, fontSize:12, fontWeight:600, background:sc.bg, color:sc.color }}>{r.status}</span>
                     </td>
-                    <td style={{ padding:'12px 16px' }}>{r.subscription?.status ?? <span style={{ color:'#9ca3af', fontSize:13 }}>None</span>}</td>
-                    <td style={{ padding:'12px 16px' }}>{r.trial_ends_at ? new Date(r.trial_ends_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'}</td>
-                    <td style={{ padding:'12px 16px' }}>{new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</td>
+                    <td style={{ padding:'12px 16px', color:'#f2f2f5' }}>{r.subscription?.status ?? <span style={{ color:'rgba(255,255,255,.4)', fontSize:13 }}>None</span>}</td>
+                    <td style={{ padding:'12px 16px', color:'#f2f2f5' }}>{r.trial_ends_at ? new Date(r.trial_ends_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'}</td>
+                    <td style={{ padding:'12px 16px', color:'#f2f2f5' }}>{new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</td>
                     <td style={{ padding:'12px 16px' }}>
                       <div style={{ display:'flex', gap:6, flexWrap:'wrap', alignItems:'center' }}>
-                        {r.status !== 'active' && <button onClick={() => changeStatus(r.id,'active')} disabled={!!actionLoading} style={{ padding:'4px 10px', background:'#dcfce7', color:'#166534', border:'none', borderRadius:6, fontWeight:600, fontSize:12, cursor:'pointer' }}>{actionLoading===r.id+'active'?'…':'Activate'}</button>}
-                        {r.status !== 'suspended' && <button onClick={() => changeStatus(r.id,'suspended')} disabled={!!actionLoading} style={{ padding:'4px 10px', background:'#fee2e2', color:'#991b1b', border:'none', borderRadius:6, fontWeight:600, fontSize:12, cursor:'pointer' }}>{actionLoading===r.id+'suspended'?'…':'Suspend'}</button>}
-                        <input type="number" min={1} max={365} placeholder="Days" value={extendDays[r.id]??''} onChange={e => setExtendDays(p=>({...p,[r.id]:e.target.value}))} style={{ width:54, padding:'2px 6px', borderRadius:6, border:'1px solid #d1d5db', fontSize:12 }} />
-                        <button onClick={() => extendTrial(r.id)} disabled={!!actionLoading || !extendDays[r.id]} style={{ padding:'4px 10px', background:'#fef9c3', color:'#854d0e', border:'none', borderRadius:6, fontWeight:600, fontSize:12, cursor:'pointer' }}>{actionLoading===r.id+'extend'?'…':'+ Trial'}</button>
+                        {r.status !== 'active' && <button onClick={() => changeStatus(r.id,'active')} disabled={!!actionLoading} style={{ padding:'4px 10px', background:'rgba(34,197,94,.15)', color:'#4ade80', border:'none', borderRadius:6, fontWeight:600, fontSize:12, cursor:'pointer' }}>{actionLoading===r.id+'active'?'…':'Activate'}</button>}
+                        {r.status !== 'suspended' && <button onClick={() => changeStatus(r.id,'suspended')} disabled={!!actionLoading} style={{ padding:'4px 10px', background:'rgba(239,68,68,.15)', color:'#f87171', border:'none', borderRadius:6, fontWeight:600, fontSize:12, cursor:'pointer' }}>{actionLoading===r.id+'suspended'?'…':'Suspend'}</button>}
+                        <input type="number" min={1} max={365} placeholder="Days" value={extendDays[r.id]??''} onChange={e => setExtendDays(p=>({...p,[r.id]:e.target.value}))} style={{ width:54, padding:'2px 6px', borderRadius:6, border:'1px solid rgba(255,255,255,.1)', background:'#13131a', color:'#f2f2f5', fontSize:12, outline:'none' }} />
+                        <button onClick={() => extendTrial(r.id)} disabled={!!actionLoading || !extendDays[r.id]} style={{ padding:'4px 10px', background:'rgba(234,179,8,.15)', color:'#facc15', border:'none', borderRadius:6, fontWeight:600, fontSize:12, cursor:'pointer' }}>{actionLoading===r.id+'extend'?'…':'+ Trial'}</button>
                       </div>
                     </td>
                   </tr>
