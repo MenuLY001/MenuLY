@@ -31,6 +31,13 @@ export async function getAuthUser(req: NextRequest): Promise<{ userId: string }>
 export async function getAdminContext(req: NextRequest): Promise<AdminContext> {
   const { userId } = await getAuthUser(req);
 
+  // Impersonation Support
+  const impersonateId = req.headers.get('x-impersonate-id');
+  if (impersonateId) {
+    const { data: sa } = await supabaseAdmin.from('super_admins').select('user_id').eq('user_id', userId).maybeSingle();
+    if (sa) return { userId, restaurantId: impersonateId };
+  }
+
   const { data: mapping } = await supabaseAdmin
     .from('restaurant_admins')
     .select('restaurant_id')

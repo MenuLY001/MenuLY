@@ -81,6 +81,11 @@ export function FormModal({ title, onClose, children }: { title: string; onClose
 
 // ─── API helpers ──────────────────────────────────────────────────────────────
 export async function apiFetch(token: string, path: string, opts?: RequestInit) {
-  const res = await fetch(path, { ...opts, headers: { Authorization: `Bearer ${token}`, ...(opts?.headers ?? {}) } });
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  if (typeof window !== 'undefined') {
+    const imp = localStorage.getItem('menuly_impersonate');
+    if (imp) headers['x-impersonate-id'] = imp;
+  }
+  const res = await fetch(path, { ...opts, headers: { ...headers, ...(opts?.headers as Record<string,string> ?? {}) } });
   return res.json();
 }

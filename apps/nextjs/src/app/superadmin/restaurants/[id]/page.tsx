@@ -60,7 +60,7 @@ export default function RestaurantDetailPage() {
             </a>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button style={{ padding: '8px 16px', background: 'rgba(165,180,252,.1)', color: '#a5b4fc', border: '1px solid rgba(165,180,252,.2)', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => { localStorage.setItem('menuly_impersonate', r.id); router.push('/admin'); }} style={{ padding: '8px 16px', background: 'rgba(165,180,252,.1)', color: '#a5b4fc', border: '1px solid rgba(165,180,252,.2)', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
               <Lock size={14} /> Impersonate
             </button>
           </div>

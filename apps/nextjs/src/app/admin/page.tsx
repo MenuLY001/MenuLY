@@ -19,6 +19,7 @@ import { useQueryClient } from '@tanstack/react-query';
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [tab, setTab] = useState<Tab>('dashboard');
+  const [isImpersonating, setIsImpersonating] = useState(false);
 
   const toastObj = useToast();
   const { toasts } = toastObj;
@@ -37,6 +38,9 @@ export default function AdminPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(prev => (prev?.user?.id === s?.user?.id ? prev : s));
     });
+    if (typeof window !== 'undefined') {
+      setIsImpersonating(!!localStorage.getItem('menuly_impersonate'));
+    }
     return () => subscription.unsubscribe();
   }, []);
 
@@ -49,7 +53,17 @@ export default function AdminPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fc', color: '#1a1a2e' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fc', color: '#1a1a2e', paddingTop: isImpersonating ? 40 : 0 }}>
+      {/* ── Impersonation Banner ────────────────────────────────────── */}
+      {isImpersonating && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 40, background: '#ef4444', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, fontWeight: 700, fontSize: 13, gap: 12 }}>
+          ⚠️ You are currently impersonating a restaurant. 
+          <button onClick={() => { localStorage.removeItem('menuly_impersonate'); window.location.href = '/superadmin'; }} style={{ padding: '4px 12px', background: 'rgba(255,255,255,.2)', border: 'none', borderRadius: 4, color: '#fff', fontWeight: 600, cursor: 'pointer' }}>
+            Stop Impersonating
+          </button>
+        </div>
+      )}
+
       {/* ── Toasts ────────────────────────────────────── */}
       <div style={{ position: 'fixed', bottom: 24, right: 24, display: 'flex', flexDirection: 'column', gap: 10, zIndex: 999 }}>
         {toasts.map(t => {
