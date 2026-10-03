@@ -43,7 +43,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     }
 
     return NextResponse.json({ message: 'Password updated successfully' });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Failed to reset password:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

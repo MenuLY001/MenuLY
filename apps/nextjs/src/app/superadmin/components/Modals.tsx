@@ -36,8 +36,8 @@ export function AddRestaurantModal({ onClose, onDone, onError }: { onClose: () =
       if (!res.ok) throw new Error(data.error || 'Failed to create');
       onDone(`Created ${name} successfully!`);
       onClose();
-    } catch (err: any) {
-      onError(err.message || 'Error creating restaurant');
+    } catch (err) {
+      onError(err instanceof Error ? err.message : 'Error creating restaurant');
     } finally {
       setLoading(false);
     }

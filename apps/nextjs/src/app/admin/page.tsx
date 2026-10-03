@@ -19,7 +19,7 @@ import { useQueryClient } from '@tanstack/react-query';
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [tab, setTab] = useState<Tab>('dashboard');
-  const [isImpersonating, setIsImpersonating] = useState(false);
+  const [isImpersonating] = useState(() => typeof window !== 'undefined' ? !!localStorage.getItem('menuly_impersonate') : false);
 
   const toastObj = useToast();
   const { toasts } = toastObj;
@@ -38,9 +38,6 @@ export default function AdminPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(prev => (prev?.user?.id === s?.user?.id ? prev : s));
     });
-    if (typeof window !== 'undefined') {
-      setIsImpersonating(!!localStorage.getItem('menuly_impersonate'));
-    }
     return () => subscription.unsubscribe();
   }, []);
 

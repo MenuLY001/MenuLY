@@ -55,7 +55,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     }
 
     return NextResponse.json({ restaurant, adminEmail });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Failed to load restaurant details:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -78,7 +78,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     const body = await req.json();
 
     const allowed = ['name', 'slug'];
-    const update: any = {};
+    const update: Record<string, string> = {};
     for (const key of allowed) {
       if (key in body && body[key]) update[key] = body[key];
     }
@@ -92,7 +92,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     if (error) throw error;
     
     return NextResponse.json(data);
-  } catch (err: any) {
+  } catch (err) {
     console.error('Failed to update restaurant:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

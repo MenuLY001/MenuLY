@@ -5,7 +5,7 @@ import { fmt } from './helpers';
 import { Plus } from 'lucide-react';
 import { VegDot } from './VegDot';
 
-export function SpecialCard({ item, brand: _brand, onOpen }: { item: MenuItem; brand: string; onOpen: (i: MenuItem) => void }) {
+export function SpecialCard({ item, onOpen }: { item: MenuItem; brand: string; onOpen: (i: MenuItem) => void }) {
   const [imgError, setImgError] = useState(false);
   return (
     <div className={`mly-special-card${!item.is_available ? ' mly-special-card--soldout' : ''}`} onClick={() => item.is_available && onOpen(item)} role="button" tabIndex={0}>
@@ -31,7 +31,7 @@ export function SpecialCard({ item, brand: _brand, onOpen }: { item: MenuItem; b
   );
 }
 
-export function PopularCard({ item, brand: _brand, onOpen }: { item: MenuItem; brand: string; onOpen: (i: MenuItem) => void }) {
+export function PopularCard({ item, onOpen }: { item: MenuItem; brand: string; onOpen: (i: MenuItem) => void }) {
   const [imgError, setImgError] = useState(false);
   return (
     <div className={`mly-pop-card${!item.is_available ? ' mly-pop-card--soldout' : ''}`} onClick={() => item.is_available && onOpen(item)} role="button" tabIndex={0}>

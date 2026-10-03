@@ -31,12 +31,12 @@ export default function RestaurantDetailPage() {
         const token = sessionData?.session?.access_token;
         if (!token) return router.push('/superadmin');
 
-        // We fetch from the single endpoint which we will create
         const apiRes = await fetch(`/api/superadmin/restaurants/${id}`, { headers: { Authorization: `Bearer ${token}` } });
         if (!apiRes.ok) throw new Error('Failed to load');
+        const d = await apiRes.json();
         setData(d);
-        setEditName(d.restaurant.name);
-        setEditSlug(d.restaurant.slug);
+        setEditName(d.restaurant?.name || '');
+        setEditSlug(d.restaurant?.slug || '');
       } catch (err) {
         console.error(err);
       } finally {
@@ -60,8 +60,8 @@ export default function RestaurantDetailPage() {
       alert('Details updated successfully!');
       // Reload page to get fresh data
       window.location.reload();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : String(err));
     } finally {
       setSavingDetails(false);
     }
@@ -81,8 +81,8 @@ export default function RestaurantDetailPage() {
       setNewPassword('');
       setPwdMsg('Password updated successfully!');
       setTimeout(() => setPwdMsg(''), 3000);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : String(err));
     } finally {
       setSavingPassword(false);
     }
@@ -187,7 +187,7 @@ export default function RestaurantDetailPage() {
                 </div>
                 <div>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', marginBottom: 4 }}>Renews On</div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>{fullDate(r.subscription.current_period_end)}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{r.subscription.current_period_end ? fullDate(r.subscription.current_period_end) : '—'}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', marginBottom: 4 }}>Amount</div>
