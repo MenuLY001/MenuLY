@@ -1,6 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { API_BASE } from '../lib/api';
+import { useToastHelpers } from '../components/Toast';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface RestaurantRow {
@@ -65,6 +67,8 @@ function StatusBadge({ status }: { status: string }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function SuperAdminPage() {
+  const toast = useToastHelpers();
+
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -85,7 +89,6 @@ export function SuperAdminPage() {
     try {
       const { data: auth, error: authErr } = await supabase.auth.signInWithPassword({ email, password });
       if (authErr || !auth.session) throw new Error(authErr?.message ?? 'Login failed');
-      // Verify they're actually a super admin before showing the dashboard
       const res = await fetch(`${API_BASE}/superadmin/dashboard`, {
         headers: { Authorization: `Bearer ${auth.session.access_token}` },
       });
@@ -125,8 +128,9 @@ export function SuperAdminPage() {
         method: 'PATCH', body: JSON.stringify({ status }),
       });
       await refresh();
+      toast.success('Status updated', `Restaurant set to "${status}".`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Action failed');
+      toast.error('Action failed', err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setActionLoading(null);
     }
@@ -143,8 +147,9 @@ export function SuperAdminPage() {
         method: 'PATCH', body: JSON.stringify({ days }),
       });
       await refresh();
+      toast.success('Trial extended', `Trial extended by ${days} day(s).`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Action failed');
+      toast.error('Action failed', err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setActionLoading(null);
     }
@@ -196,10 +201,10 @@ export function SuperAdminPage() {
         <div style={styles.statsGrid}>
           {[
             { label: 'Total Restaurants', value: stats.totalRestaurants, icon: '🍽️' },
-            { label: 'Active (paying)', value: stats.activeCount, icon: '✅' },
-            { label: 'On Trial', value: stats.trialCount, icon: '⏳' },
-            { label: 'Suspended', value: stats.suspendedCount, icon: '🔒' },
-            { label: 'Total Revenue', value: `₹${(stats.totalRevenuePaise / 100).toLocaleString('en-IN')}`, icon: '💰' },
+            { label: 'Active (paying)',    value: stats.activeCount,      icon: '✅' },
+            { label: 'On Trial',           value: stats.trialCount,       icon: '⏳' },
+            { label: 'Suspended',          value: stats.suspendedCount,   icon: '🔒' },
+            { label: 'Total Revenue',      value: `₹${(stats.totalRevenuePaise / 100).toLocaleString('en-IN')}`, icon: '💰' },
           ].map(card => (
             <div key={card.label} style={styles.statCard}>
               <div style={{ fontSize: 28 }}>{card.icon}</div>
@@ -223,7 +228,7 @@ export function SuperAdminPage() {
               </tr>
             </thead>
             <tbody>
-              {restaurants.map(r => (
+              {(restaurants as RestaurantRow[]).map(r => (
                 <tr key={r.id} style={styles.tr}>
                   <td style={styles.td}>
                     <div style={{ fontWeight: 600 }}>{r.name}</div>
@@ -262,7 +267,6 @@ export function SuperAdminPage() {
                           {actionLoading === r.id + 'suspended' ? '…' : 'Suspend'}
                         </button>
                       )}
-                      {/* Extend trial */}
                       <input
                         type="number" min={1} max={365} placeholder="Days"
                         value={extendDays[r.id] ?? ''}
@@ -295,11 +299,11 @@ const styles = {
   } as React.CSSProperties,
   loginCard: {
     background: '#fff', borderRadius: 16, padding: 36, width: 360,
-    boxShadow: '0 4px 24px rgba(0,0,0,.10)', textAlign: 'center',
+    boxShadow: '0 4px 24px rgba(0,0,0,.10)', textAlign: 'center' as const,
   } as React.CSSProperties,
   input: {
     width: '100%', padding: '10px 14px', borderRadius: 8,
-    border: '1.5px solid #e5e7eb', fontSize: 14, boxSizing: 'border-box',
+    border: '1.5px solid #e5e7eb', fontSize: 14, boxSizing: 'border-box' as const,
     outline: 'none',
   } as React.CSSProperties,
   btn: {
@@ -318,8 +322,7 @@ const styles = {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
   } as React.CSSProperties,
   errorBanner: {
-    background: '#fee2e2', color: '#991b1b', padding: '10px 28px',
-    fontSize: 14,
+    background: '#fee2e2', color: '#991b1b', padding: '10px 28px', fontSize: 14,
   } as React.CSSProperties,
   statsGrid: {
     display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px,1fr))',
@@ -328,7 +331,7 @@ const styles = {
   statCard: {
     background: '#fff', borderRadius: 12, padding: 20,
     boxShadow: '0 1px 4px rgba(0,0,0,.07)',
-    display: 'flex', flexDirection: 'column', gap: 4,
+    display: 'flex', flexDirection: 'column' as const, gap: 4,
   } as React.CSSProperties,
   section: {
     background: '#fff', borderRadius: 12, margin: '20px 28px',

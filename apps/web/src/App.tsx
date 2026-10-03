@@ -6,6 +6,7 @@ import { LoginPage } from './admin/LoginPage';
 import { AuthProvider, useAuth } from './admin/AuthContext';
 import { RegisterPage } from './pages/RegisterPage';
 import { SuperAdminPage } from './pages/SuperAdminPage';
+import { ToastProvider } from './components/Toast';
 
 function AdminRoute() {
   const { session, loading } = useAuth();
@@ -36,11 +37,12 @@ function AdminRoute() {
 
 export function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
-          <div style={{ flex: 1 }}>
-            <Routes>
+    <ToastProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
+            <div style={{ flex: 1 }}>
+              <Routes>
               {/* Public menu route — no auth */}
               <Route path="/menu/:slug" element={<MenuPage />} />
 
@@ -77,9 +79,10 @@ export function App() {
                 </div>
               } />
             </Routes>
+            </div>
           </div>
-        </div>
-      </BrowserRouter>
-    </AuthProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </ToastProvider>
   );
 }

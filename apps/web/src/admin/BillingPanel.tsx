@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { billingApi, ApiError } from '../lib/api';
 import { BillingInfo } from '@qr-menu/types';
+import { useToastHelpers, ConfirmModal } from '../components/Toast';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -40,11 +41,12 @@ const STATUS_LABELS: Record<string, string> = {
 
 export function BillingPanel() {
   const { token } = useAuth();
+  const toast = useToastHelpers();
   const [billing, setBilling] = useState<BillingInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const [actionMsg, setActionMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -58,7 +60,6 @@ export function BillingPanel() {
   const handleActivateAutopay = async () => {
     if (!token) return;
     setActionLoading(true);
-    setActionMsg(null);
     setError(null);
     try {
       const { subscription_id, key_id } = await billingApi.createSubscription(token);
@@ -72,40 +73,36 @@ export function BillingPanel() {
         handler: async (response: { razorpay_payment_id: string; razorpay_subscription_id: string; razorpay_signature: string }) => {
           try {
             await billingApi.verifyPayment(token, response);
-            setActionMsg({ type: 'success', text: '🎉 Autopay activated! Refreshing…' });
-            setTimeout(() => window.location.reload(), 2000);
+            toast.success('🎉 Autopay Activated!', 'Your subscription is now active. Reloading…');
+            setTimeout(() => window.location.reload(), 2500);
           } catch {
-            setActionMsg({ type: 'success', text: 'Payment recorded. Your plan will activate shortly.' });
+            toast.info('Payment recorded', 'Your plan will activate shortly.');
           }
         },
         modal: {
-          ondismiss: () => {
-            setActionLoading(false);
-          },
+          ondismiss: () => setActionLoading(false),
         },
       });
       rzp.open();
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Could not start payment.';
-      setActionMsg({ type: 'error', text: msg });
-    } finally {
+      toast.error('Payment Error', msg);
       setActionLoading(false);
     }
   };
 
   const handleCancel = async () => {
     if (!token) return;
-    if (!window.confirm('Cancel your subscription? You will keep access until the end of the current billing period.')) return;
+    setShowCancelConfirm(false);
     setActionLoading(true);
-    setActionMsg(null);
     try {
       const result = await billingApi.cancelSubscription(token);
-      setActionMsg({ type: 'success', text: result.message });
+      toast.success('Subscription Cancelled', result.message);
       const updated = await billingApi.getBilling(token);
       setBilling(updated);
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Failed to cancel subscription.';
-      setActionMsg({ type: 'error', text: msg });
+      toast.error('Cancel Failed', msg);
     } finally {
       setActionLoading(false);
     }
@@ -198,13 +195,6 @@ export function BillingPanel() {
           )}
         </div>
 
-        {/* Action message */}
-        {actionMsg && (
-          <div className={`billing-action-msg billing-action-msg--${actionMsg.type}`}>
-            {actionMsg.text}
-          </div>
-        )}
-
         {/* Actions */}
         <div className="billing-actions">
           {!hasActiveSub && status !== 'cancelled' && (
@@ -219,7 +209,7 @@ export function BillingPanel() {
           {hasActiveSub && !isCancelPending && (
             <button
               className="billing-btn billing-btn--ghost"
-              onClick={handleCancel}
+              onClick={() => setShowCancelConfirm(true)}
               disabled={actionLoading}
             >
               Cancel subscription
@@ -227,6 +217,18 @@ export function BillingPanel() {
           )}
         </div>
       </div>
+
+      {showCancelConfirm && (
+        <ConfirmModal
+          title="Cancel Subscription?"
+          message="You will keep full access until the end of your current billing period. After that, your menu will be suspended."
+          confirmLabel="Yes, Cancel"
+          cancelLabel="Keep Subscription"
+          danger
+          onConfirm={handleCancel}
+          onCancel={() => setShowCancelConfirm(false)}
+        />
+      )}
 
       {/* ── Payment history ── */}
       <div className="billing-section">
