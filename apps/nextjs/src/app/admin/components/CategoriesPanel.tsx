@@ -2,7 +2,28 @@
 import { useState, useEffect } from 'react';
 import { type Category } from './types';
 import { useToast, inp, btnP, btnG, lbl, Spinner, EmptyState, Modal, apiFetch } from './shared';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+function SortableCategoryItem({ category, onEdit, onDelete }: { category: Category, onEdit: () => void, onDelete: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: category.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 2 : 1, position: 'relative' as const, opacity: isDragging ? 0.8 : 1 };
+  
+  return (
+    <div ref={setNodeRef} style={style} className={`item-row ${isDragging ? 'is-dragging' : ''}`}>
+      <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '12px 8px', color: '#9ca3af', display: 'flex', alignItems: 'center' }}>
+        <GripVertical size={18} />
+      </div>
+      <span className="item-row__name">{category.name}</span>
+      <div className="item-row__actions">
+        <button onClick={onEdit} className="btn-ghost" title="Edit" style={{ padding: '8px 10px', color: '#6b7280' }}><Pencil size={16} /></button>
+        <button onClick={onDelete} className="btn-danger-ghost" title="Delete" style={{ padding: '8px 10px', background: 'transparent' }}><Trash2 size={16} /></button>
+      </div>
+    </div>
+  );
+}
 
 export function CategoriesPanel({ token, toast }: { token: string; toast: ReturnType<typeof useToast> }) {
   const [cats, setCats] = useState<Category[]>([]);
@@ -45,20 +66,29 @@ export function CategoriesPanel({ token, toast }: { token: string; toast: Return
     setCats(p => p.filter(x => x.id !== c.id)); toast.success('Category deleted');
   };
 
-  const move = async (id: string, dir: 'up' | 'down') => {
-    const idx = cats.findIndex(c => c.id === id);
-    const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= cats.length) return;
-    const next = [...cats];
-    const tmp = next[idx].sort_order;
-    next[idx] = { ...next[idx], sort_order: next[swapIdx].sort_order };
-    next[swapIdx] = { ...next[swapIdx], sort_order: tmp };
-    next.sort((a, b) => a.sort_order - b.sort_order);
-    setCats(next);
-    await Promise.all([
-      apiFetch(token, `/api/admin/categories/${next[idx].id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sort_order: next[idx].sort_order }) }),
-      apiFetch(token, `/api/admin/categories/${next[swapIdx].id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sort_order: next[swapIdx].sort_order }) }),
-    ]);
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = async (event: any) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = cats.findIndex(c => c.id === active.id);
+      const newIndex = cats.findIndex(c => c.id === over.id);
+      const newCats = arrayMove(cats, oldIndex, newIndex);
+      
+      // Apply new sort orders based on index
+      const updatedCats = newCats.map((c, i) => ({ ...c, sort_order: i }));
+      setCats(updatedCats);
+      
+      // Save all updated sort orders
+      Promise.all(updatedCats.map(c => 
+        apiFetch(token, `/api/admin/categories/${c.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sort_order: c.sort_order }) })
+      )).catch(() => {
+        toast.error("Failed to save ordering");
+      });
+    }
   };
 
   return (
@@ -72,25 +102,15 @@ export function CategoriesPanel({ token, toast }: { token: string; toast: Return
       ) : cats.length === 0 ? (
         <EmptyState icon="📋" text="No categories yet. Create your first one!" />
       ) : (
-        <div className="item-list">
-          {cats.map((c, i) => {
-            const isFirst = i === 0;
-            const isLast = i === cats.length - 1;
-            return (
-              <div key={c.id} className="item-row">
-                <div className="item-row__sort">
-                  <button onClick={() => move(c.id, 'up')} disabled={isFirst} className="sort-btn">↑</button>
-                  <button onClick={() => move(c.id, 'down')} disabled={isLast} className="sort-btn">↓</button>
-                </div>
-                <span className="item-row__name">{c.name}</span>
-                <div className="item-row__actions">
-                  <button onClick={() => openEdit(c)} className="btn-ghost" title="Edit" style={{ padding: '8px 10px', color: '#6b7280' }}><Pencil size={16} /></button>
-                  <button onClick={() => del(c)} className="btn-danger-ghost" title="Delete" style={{ padding: '8px 10px', background: 'transparent' }}><Trash2 size={16} /></button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={cats.map(c => c.id)} strategy={verticalListSortingStrategy}>
+            <div className="item-list">
+              {cats.map(c => (
+                <SortableCategoryItem key={c.id} category={c} onEdit={() => openEdit(c)} onDelete={() => del(c)} />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
       {modal && (
         <Modal title={editing ? 'Edit Category' : 'New Category'} onClose={() => setModal(false)}>

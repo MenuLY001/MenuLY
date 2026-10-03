@@ -5,17 +5,18 @@ import type { Session } from '@supabase/supabase-js';
 
 import { type Tab, type Restaurant } from './components/types';
 import { useToast, TC, Spinner, apiFetch } from './components/shared';
+import { DashboardPanel } from './components/DashboardPanel';
 import { CategoriesPanel } from './components/CategoriesPanel';
 import { ItemsPanel } from './components/ItemsPanel';
 import { SettingsPanel } from './components/SettingsPanel';
 import { BillingPanel } from './components/BillingPanel';
 import { SignInScreen } from './components/SignInScreen';
-import { LayoutDashboard, List, Settings, CreditCard, ExternalLink, LogOut } from 'lucide-react';
+import { LayoutDashboard, List, Settings, CreditCard, ExternalLink, LogOut, Home } from 'lucide-react';
 
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [tab, setTab] = useState<Tab>('categories');
+  const [tab, setTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const toastObj = useToast();
@@ -83,6 +84,7 @@ export default function AdminPage() {
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
           {[
+            { id: 'dashboard', label: 'Dashboard', icon: <Home size={18} /> },
             { id: 'categories', label: 'Categories', icon: <LayoutDashboard size={18} /> },
             { id: 'items', label: 'Menu Items', icon: <List size={18} /> },
             { id: 'settings', label: 'Settings & QR', icon: <Settings size={18} /> },
@@ -136,6 +138,7 @@ export default function AdminPage() {
 
         {/* Content */}
         <div style={{ flex: 1, padding: '24px 32px 100px', maxWidth: 1200, margin: '0 auto', width: '100%' }} className="admin-content">
+          {tab === 'dashboard'  && <DashboardPanel  token={token} onNavigate={(t) => setTab(t as Tab)} />}
           {tab === 'categories' && <CategoriesPanel token={token} toast={toastObj} />}
           {tab === 'items'      && <ItemsPanel      token={token} toast={toastObj} />}
           {tab === 'settings'   && <SettingsPanel   token={token} toast={toastObj} onRestaurantUpdate={setRestaurant} />}
@@ -146,10 +149,10 @@ export default function AdminPage() {
       <nav className="mobile-bottom-nav" style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #e5e7eb', zIndex: 50, paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: 60 }}>
           {[
+            { id: 'dashboard', label: 'Home', icon: <Home size={20} /> },
             { id: 'categories', label: 'Cats', icon: <LayoutDashboard size={20} /> },
             { id: 'items', label: 'Items', icon: <List size={20} /> },
             { id: 'settings', label: 'Settings', icon: <Settings size={20} /> },
-            { id: 'billing', label: 'Billing', icon: <CreditCard size={20} /> },
           ].map(t => (
             <button
               key={t.id}

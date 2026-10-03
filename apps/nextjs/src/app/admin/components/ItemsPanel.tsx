@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { type Category, type MenuItem } from './types';
 import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, EmptyState, Modal, apiFetch } from './shared';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Search } from 'lucide-react';
 
 const EMPTY_FORM = { category_id: '', name: '', description: '', price: '', image_url: '', is_available: true, is_veg: true, is_special: false };
 
@@ -16,6 +16,8 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [filterCat, setFilterCat] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('default');
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -83,7 +85,19 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
     setItems(p => p.map(i => i.id === u.id ? u : i));
   };
 
-  const filtered = filterCat === 'all' ? items : items.filter(i => i.category_id === filterCat);
+  const filtered = items.filter(i => {
+    if (filterCat !== 'all' && i.category_id !== filterCat) return false;
+    if (searchQuery && !i.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
+
+  const sortedAndFiltered = [...filtered].sort((a, b) => {
+    if (sortBy === 'name') return a.name.localeCompare(b.name);
+    if (sortBy === 'price-asc') return a.price - b.price;
+    if (sortBy === 'price-desc') return b.price - a.price;
+    return 0; // fallback to sort_order (which is the default array order)
+  });
+
   const catName = (id: string) => cats.find(c => c.id === id)?.name ?? '—';
 
   return (
@@ -95,22 +109,39 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
       {cats.length === 0 && !loading && <div className="panel-warn">⚠️ Create at least one category before adding items.</div>}
 
       {cats.length > 0 && (
-        <div className="items-filter">
-          {['all', ...cats.map(c => c.id)].map(id => (
-            <button key={id} onClick={() => setFilterCat(id)} className={`filter-pill ${filterCat === id ? 'filter-pill--active' : ''}`}>
-              {id === 'all' ? 'All' : catName(id)}
-            </button>
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+          {/* Top Bar: Search & Sort */}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+              <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: '#9ca3af' }} />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search menu items..." style={{ ...inp, paddingLeft: 38, width: '100%', border: '1px solid #e5e7eb', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.02)' }} />
+            </div>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...inp, width: 'auto', background: '#fff', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,.02)' }}>
+              <option value="default">Custom Order</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="price-asc">Price (Low to High)</option>
+              <option value="price-desc">Price (High to Low)</option>
+            </select>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="items-filter">
+            {['all', ...cats.map(c => c.id)].map(id => (
+              <button key={id} onClick={() => setFilterCat(id)} className={`filter-pill ${filterCat === id ? 'filter-pill--active' : ''}`}>
+                {id === 'all' ? 'All' : catName(id)}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
       {loading ? (
         <Spinner />
-      ) : filtered.length === 0 ? (
-        <EmptyState icon="🍽️" text={filterCat === 'all' ? 'No items yet.' : 'No items in this category.'} />
+      ) : sortedAndFiltered.length === 0 ? (
+        <EmptyState icon="🍽️" text={searchQuery ? 'No items matched your search.' : filterCat === 'all' ? 'No items yet.' : 'No items in this category.'} />
       ) : (
         <div className="item-list">
-          {filtered.map(item => (
+          {sortedAndFiltered.map(item => (
             <div key={item.id} className="item-row">
               {item.image_url
                 // eslint-disable-next-line @next/next/no-img-element
