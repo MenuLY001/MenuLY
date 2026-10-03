@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-
+import { API_BASE } from '../lib/api';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface RestaurantRow {
@@ -33,10 +33,9 @@ interface DashboardData {
 }
 
 // ─── API helper ───────────────────────────────────────────────────────────────
-const API = import.meta.env.API_URL || '';
 
 async function superAdminFetch<T>(path: string, token: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(`${API}/api/superadmin${path}`, {
+  const res = await fetch(`${API_BASE}/superadmin${path}`, {
     ...opts,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(opts?.headers ?? {}) },
   });
@@ -87,7 +86,7 @@ export function SuperAdminPage() {
       const { data: auth, error: authErr } = await supabase.auth.signInWithPassword({ email, password });
       if (authErr || !auth.session) throw new Error(authErr?.message ?? 'Login failed');
       // Verify they're actually a super admin before showing the dashboard
-      const res = await fetch(`${API}/api/superadmin/dashboard`, {
+      const res = await fetch(`${API_BASE}/superadmin/dashboard`, {
         headers: { Authorization: `Bearer ${auth.session.access_token}` },
       });
       if (res.status === 403) throw new Error('This account is not a super admin.');

@@ -4,7 +4,7 @@
  */
 
 const _url = import.meta.env.API_URL || '';
-const API_BASE = _url.endsWith('/api') ? _url : (_url ? `${_url.replace(/\/$/, '')}/api` : '/api');
+export const API_BASE = _url.endsWith('/api') ? _url : (_url ? `${_url.replace(/\/$/, '')}/api` : '/api');
 
 async function request<T>(
   path: string,
