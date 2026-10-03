@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
     if (error) throw error;
     return NextResponse.json(data);
   } catch (e) {
+    console.error('GET /api/admin/items Error:', e);
     if (e instanceof Response) return e;
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
     if (error) throw error;
     return NextResponse.json(data, { status: 201 });
   } catch (e) {
+    console.error('POST /api/admin/items Error:', e);
     if (e instanceof Response) return e;
     return NextResponse.json({ error: 'Failed to create item' }, { status: 500 });
   }
