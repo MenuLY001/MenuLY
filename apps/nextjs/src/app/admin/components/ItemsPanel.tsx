@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { type Category, type MenuItem } from './types';
-import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, EmptyState, Modal, apiFetch } from './shared';
+import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, EmptyState, FormModal, apiFetch } from './shared';
 import { Pencil, Trash2, Search, GripVertical } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -102,8 +102,9 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    const price = parseFloat(form.price);
-    if (isNaN(price) || price <= 0) { toast.error('Invalid price'); return; }
+    const priceStr = String(form.price).replace(/[^0-9.]/g, '');
+    const price = parseFloat(priceStr);
+    if (isNaN(price) || price < 0) { toast.error('Enter a valid price'); return; }
     setSaving(true);
     try {
       const payload = { ...form, price, description: form.description || undefined, image_url: form.image_url || undefined };
@@ -227,52 +228,106 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
       )}
 
       {modal && (
-        <Modal title={editing ? 'Edit Item' : 'New Item'} onClose={() => setModal(false)} wide>
-          <form onSubmit={save} className="modal__form">
-            <div className="field"><label style={lbl}>Category</label>
-              <select style={inp} value={form.category_id} onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))} required>
-                {cats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div className="field"><label style={lbl}>Name</label>
-              <input style={inp} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Paneer Tikka" required />
-            </div>
-            <div className="field"><label style={lbl}>Description (optional)</label>
-              <textarea style={{ ...inp, minHeight: 72, resize: 'vertical' }} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Fresh paneer marinated in spices…" />
-            </div>
-            <div className="field__row">
-              <div className="field"><label style={lbl}>Price (₹)</label>
-                <input style={inp} type="number" min="0" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="180" required />
+        <FormModal title={editing ? 'Edit Item' : 'New Item'} onClose={() => setModal(false)}>
+          <form onSubmit={save} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+            <div className="f-modal-body" style={{ padding: '24px 24px 8px' }}>
+              
+              <div style={{ display: 'flex', gap: 24, marginBottom: 20, flexWrap: 'wrap' }}>
+                <div style={{ width: 120, flexShrink: 0 }}>
+                  <label style={{ ...lbl, marginBottom: 8 }}>Image</label>
+                  <div 
+                    onClick={() => fileRef.current?.click()}
+                    style={{ width: 120, height: 120, borderRadius: 12, border: '2px dashed #d1d5db', background: '#f9fafb', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer', position: 'relative' }}
+                  >
+                    {uploading ? (
+                      <Spinner />
+                    ) : form.image_url ? (
+                      <img src={form.image_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ color: '#9ca3af', textAlign: 'center', fontSize: 12, padding: 8 }}>
+                        <div style={{ fontSize: 24, marginBottom: 4 }}>📷</div>
+                        Upload JPG/PNG
+                      </div>
+                    )}
+                  </div>
+                  <input type="file" accept="image/*" ref={fileRef} style={{ display: 'none' }} onChange={upload} />
+                  {form.image_url && !uploading && (
+                    <button type="button" onClick={() => setForm(f => ({ ...f, image_url: '' }))} style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: 12, fontWeight: 600, marginTop: 8, cursor: 'pointer', width: '100%' }}>Remove</button>
+                  )}
+                </div>
+
+                <div style={{ flex: 1, minWidth: 200, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div>
+                    <label style={lbl}>Name *</label>
+                    <input style={inp} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Paneer Tikka" required autoFocus />
+                  </div>
+                  <div>
+                    <label style={lbl}>Category *</label>
+                    <select style={inp} value={form.category_id} onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))} required>
+                      <option value="" disabled>Select category...</option>
+                      {cats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                </div>
               </div>
-              <div className="field" style={{ justifyContent: 'flex-end', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {[
-                  { label: 'Available', key: 'is_available' as const, on: form.is_available, c: BRAND },
-                  { label: form.is_veg ? '🟢 Veg' : '🔴 Non-Veg', key: 'is_veg' as const, on: form.is_veg, c: form.is_veg ? '#22c55e' : '#ef4444' },
-                  { label: form.is_special ? '⭐ Special' : 'Regular', key: 'is_special' as const, on: form.is_special, c: '#f59e0b' },
-                ].map(({ label, key, on, c }) => (
-                  <button key={key} type="button" onClick={() => setForm(f => ({ ...f, [key]: !on }))}
-                    style={{ padding: '6px 12px', borderRadius: 8, border: `1.5px solid ${on ? c : '#e5e7eb'}`, background: on ? `${c}18` : '#f9fafb', color: on ? c : '#9ca3af', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    {label}
-                  </button>
-                ))}
+
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <label style={lbl}>Description</label>
+                  <span style={{ fontSize: 12, color: form.description.length > 150 ? '#ef4444' : '#9ca3af' }}>{form.description.length}/150</span>
+                </div>
+                <textarea style={{ ...inp, minHeight: 80, resize: 'vertical' }} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="e.g. Fresh paneer marinated in spices…" />
               </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
+                <div>
+                  <label style={lbl}>Price (₹) *</label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: 14, top: 10, color: '#6b7280', fontWeight: 600 }}>₹</span>
+                    <input style={{ ...inp, paddingLeft: 30 }} type="text" inputMode="decimal" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="180" required />
+                  </div>
+                </div>
+                
+                <div>
+                  <label style={lbl}>Veg type</label>
+                  <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: 8, padding: 4 }}>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, is_veg: true }))} style={{ flex: 1, padding: '8px 4px', border: 'none', borderRadius: 6, background: form.is_veg ? '#fff' : 'transparent', boxShadow: form.is_veg ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', color: form.is_veg ? '#1f2937' : '#6b7280', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                       <div style={{ width: 12, height: 12, borderRadius: 2, border: `1.5px solid #22c55e`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#22c55e' }} /></div> Veg
+                    </button>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, is_veg: false }))} style={{ flex: 1, padding: '8px 4px', border: 'none', borderRadius: 6, background: !form.is_veg ? '#fff' : 'transparent', boxShadow: !form.is_veg ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', color: !form.is_veg ? '#1f2937' : '#6b7280', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                       <div style={{ width: 12, height: 12, borderRadius: 2, border: `1.5px solid #ef4444`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#ef4444' }} /></div> Non-veg
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={lbl}>Tag</label>
+                  <select style={inp} value={form.is_special ? 'special' : 'none'} onChange={e => setForm(f => ({ ...f, is_special: e.target.value === 'special' }))}>
+                    <option value="none">None</option>
+                    <option value="special">Chef's Special</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={lbl}>Available for ordering</label>
+                  <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', height: 42 }}>
+                    <div style={{ position: 'relative' }}>
+                      <input type="checkbox" style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} checked={form.is_available} onChange={e => setForm(f => ({ ...f, is_available: e.target.checked }))} />
+                      <div style={{ width: 44, height: 24, backgroundColor: form.is_available ? '#22c55e' : '#d1d5db', borderRadius: 20, transition: 'background-color 0.2s ease' }} />
+                      <div style={{ position: 'absolute', top: 2, left: form.is_available ? 22 : 2, width: 20, height: 20, backgroundColor: '#fff', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                    </div>
+                  </label>
+                </div>
+              </div>
+
             </div>
-            <div className="field"><label style={lbl}>Image</label>
-              {form.image_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={form.image_url} alt="Preview" style={{ width: '100%', maxHeight: 150, objectFit: 'cover', borderRadius: 8, marginBottom: 8 }} />
-              )}
-              <input type="file" accept="image/*" ref={fileRef} style={{ display: 'none' }} onChange={upload} />
-              <button type="button" style={btnG} onClick={() => fileRef.current?.click()} disabled={uploading}>
-                {uploading ? 'Uploading…' : form.image_url ? '↺ Change Image' : '↑ Upload Image'}
-              </button>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 4 }}>
+            
+            <div className="f-modal-footer">
               <button type="button" onClick={() => setModal(false)} style={btnG}>Cancel</button>
-              <button type="submit" style={btnP} disabled={saving || uploading}>{saving ? 'Saving…' : 'Save'}</button>
+              <button type="submit" style={btnP} disabled={saving || uploading || !form.name.trim() || !form.category_id || !form.price}>{saving ? 'Saving…' : 'Save item'}</button>
             </div>
           </form>
-        </Modal>
+        </FormModal>
       )}
     </div>
   );

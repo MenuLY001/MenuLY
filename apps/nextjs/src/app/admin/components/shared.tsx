@@ -39,10 +39,43 @@ export function Modal({ title, onClose, children, wide }: { title: string; onClo
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', backdropFilter: 'blur(4px)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={onClose}>
       <div style={{ background: '#fff', borderRadius: 16, padding: 28, width: '100%', maxWidth: wide ? 560 : 480, maxHeight: '90dvh', overflowY: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,.2)' }} onClick={e => e.stopPropagation()}>
-        <h2 style={{ margin: '0 0 20px', fontSize: 20, fontWeight: 800, color: '#1a1a2e' }}>{title}</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#1a1a2e' }}>{title}</h2>
+          <button type="button" onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 4, display: 'flex' }}><span style={{ fontSize: 24, lineHeight: 1 }}>&times;</span></button>
+        </div>
         {children}
       </div>
     </div>
+  );
+}
+
+export function FormModal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <>
+      <style>{`
+        .f-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .f-modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 640px; display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .f-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e5e7eb; }
+        .f-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+        .f-modal-footer { padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 12px; background: #f9fafb; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @media (max-width: 600px) {
+          .f-modal-overlay { padding: 0; align-items: flex-end; }
+          .f-modal-content { border-bottom-left-radius: 0; border-bottom-right-radius: 0; max-height: 95vh; animation: slideUpMobile 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+          .f-modal-footer { padding-bottom: calc(16px + env(safe-area-inset-bottom)); position: sticky; bottom: 0; }
+        }
+        @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
+      `}</style>
+      <div className="f-modal-overlay" onMouseDown={onClose}>
+        <div className="f-modal-content" onMouseDown={e => e.stopPropagation()}>
+          <div className="f-modal-header">
+            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#1a1a2e' }}>{title}</h2>
+            <button type="button" onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 4, display: 'flex' }}><span style={{ fontSize: 28, lineHeight: 1 }}>&times;</span></button>
+          </div>
+          {children}
+        </div>
+      </div>
+    </>
   );
 }
 
