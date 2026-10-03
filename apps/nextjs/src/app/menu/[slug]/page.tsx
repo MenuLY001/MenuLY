@@ -11,7 +11,7 @@ interface Props {
 async function getMenuData(slug: string) {
   const { data: restaurant } = await supabaseAdmin
     .from('restaurants')
-    .select('id, name, slug, theme_color, logo_url, menu_template, status, trial_ends_at, phone, address')
+    .select('id, name, slug, theme_color, logo_url, menu_template, status, trial_ends_at')
     .eq('slug', slug)
     .maybeSingle();
 
