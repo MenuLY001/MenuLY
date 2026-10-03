@@ -25,7 +25,7 @@ import { MenulyDarkTemplate } from './templates/MenulyDarkTemplate';
 export function MenuPage() {
   const { slug } = useParams<{ slug: string }>();
   const tableNo = useTable();
-  const { data, loading, error, notFound } = useMenu(slug!);
+  const { data, loading, error, notFound, unavailable, restaurantName } = useMenu(slug!);
   const [cartOpen, setCartOpen] = useState(false);
   const [waiterCart, setWaiterCart] = useState<CartState | null>(null);
 
@@ -52,6 +52,21 @@ export function MenuPage() {
       setWaiterCart(result.data);
     }
   };
+
+  // Subscription inactive — neutral page, not a 404
+  if (unavailable) {
+    return (
+      <div className="menu-error">
+        <div className="menu-error__icon" style={{ fontSize: 56 }}>🔒</div>
+        <h1 className="menu-error__title">
+          {restaurantName ? `${restaurantName}` : 'This menu'} is temporarily unavailable
+        </h1>
+        <p className="menu-error__body" style={{ maxWidth: 360 }}>
+          This restaurant's digital menu is currently offline. Please visit us in person or contact the restaurant directly.
+        </p>
+      </div>
+    );
+  }
 
   if (notFound) {
     return (

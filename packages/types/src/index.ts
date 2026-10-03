@@ -2,6 +2,8 @@
 
 export type MenuTemplate = 'classic' | 'menuly-dark';
 
+export type RestaurantStatus = 'trialing' | 'active' | 'past_due' | 'suspended' | 'cancelled';
+
 export interface Restaurant {
   id: string;
   slug: string;
@@ -10,7 +12,58 @@ export interface Restaurant {
   theme_color: string;
   menu_template: MenuTemplate;
   ordering_enabled: boolean;
+  status: RestaurantStatus;
+  trial_ends_at: string | null;
+  updated_at: string;
   created_at: string;
+}
+
+// ─── Billing Types ────────────────────────────────────────────────────────────
+
+export interface Plan {
+  id: string;
+  name: string;
+  description: string | null;
+  price_paise: number;
+  currency: string;
+  interval: string;
+  razorpay_plan_id: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface Subscription {
+  id: string;
+  restaurant_id: string;
+  plan_id: string;
+  status: string; // mirrors Razorpay states
+  razorpay_subscription_id: string | null;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  cancelled_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Payment {
+  id: string;
+  restaurant_id: string;
+  subscription_id: string | null;
+  razorpay_payment_id: string | null;
+  amount_paise: number;
+  currency: string;
+  status: 'captured' | 'failed' | 'refunded';
+  failure_reason: string | null;
+  created_at: string;
+}
+
+export interface BillingInfo {
+  subscription: Subscription | null;
+  payments: Payment[];
+  plan: Plan | null;
+  trial_ends_at: string | null;
+  status: RestaurantStatus;
 }
 
 export interface Category {

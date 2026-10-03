@@ -82,6 +82,12 @@ export function LoginPage() {
           Admin accounts are provisioned by the platform owner.
           <br />No public registration.
         </p>
+        <p className="login-note" style={{ marginTop: 8 }}>
+          New restaurant?{' '}
+          <a href="/register" style={{ color: 'var(--brand)', fontWeight: 600, textDecoration: 'none' }}>
+            Register here →
+          </a>
+        </p>
       </div>
 
       <style>{`

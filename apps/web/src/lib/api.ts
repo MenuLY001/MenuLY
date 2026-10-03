@@ -109,3 +109,73 @@ export const adminApi = {
     return url as string;
   },
 };
+
+// ─── Auth API (public — no token required) ────────────────────────────────────
+
+export interface RegisterPayload {
+  restaurant_name: string;
+  restaurant_slug: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  access_token: string | null;
+  expires_at?: number;
+  user: { id: string; email: string };
+  restaurant: {
+    id: string;
+    slug: string;
+    name: string;
+    theme_color: string;
+    status: string;
+    trial_ends_at: string;
+  };
+  trial_ends_at: string;
+  trial_days: number;
+}
+
+export const authApi = {
+  register: (data: RegisterPayload) =>
+    request<RegisterResponse>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+};
+
+// ─── Billing API ──────────────────────────────────────────────────────────────
+
+export interface CreateSubscriptionResponse {
+  subscription_id: string;
+  key_id: string;
+  existing: boolean;
+}
+
+export interface VerifyPaymentPayload {
+  razorpay_payment_id: string;
+  razorpay_subscription_id: string;
+  razorpay_signature: string;
+}
+
+export const billingApi = {
+  getBilling: (token: string) =>
+    request<import('@qr-menu/types').BillingInfo>('/admin/billing', {}, token),
+
+  createSubscription: (token: string) =>
+    request<CreateSubscriptionResponse>('/admin/billing/create-subscription', {
+      method: 'POST',
+    }, token),
+
+  verifyPayment: (token: string, data: VerifyPaymentPayload) =>
+    request<{ success: boolean; message: string }>('/admin/billing/verify-payment', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, token),
+
+  cancelSubscription: (token: string) =>
+    request<{ success: boolean; message: string }>('/admin/billing/cancel', {
+      method: 'POST',
+    }, token),
+};
+

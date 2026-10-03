@@ -14,6 +14,7 @@ const TABS = [
   { id: 'categories', label: 'Categories', icon: '📋' },
   { id: 'items', label: 'Menu Items', icon: '🍽️' },
   { id: 'settings', label: 'Settings', icon: '⚙️' },
+  { id: 'billing', label: 'Billing', icon: '💳' },
 ];
 
 export function AdminLayout({ restaurant, activeTab, onTabChange, children }: AdminLayoutProps) {
