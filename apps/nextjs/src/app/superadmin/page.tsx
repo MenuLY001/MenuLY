@@ -85,6 +85,7 @@ export default function SuperAdminPage() {
 
   useEffect(() => {
     if (token && !data && !loading && !loggingIn) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       void refresh();
     }
   }, [token, data, loading, loggingIn, refresh]);
