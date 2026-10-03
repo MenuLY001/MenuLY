@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { type Restaurant } from './types';
 import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, apiFetch } from './shared';
+import { Copy, ExternalLink, Share2, Download } from 'lucide-react';
 
 export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: string; toast: ReturnType<typeof useToast>; onRestaurantUpdate: (r: Restaurant) => void }) {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
@@ -56,10 +57,33 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
     } catch { toast.error('Failed to save settings'); } finally { setSaving(false); }
   };
 
-  const downloadQR = () => {
-    if (!qrDataUrl || !restaurant) return;
-    const a = document.createElement('a'); a.href = qrDataUrl; a.download = `${restaurant.slug}-menu-qr.png`; a.click();
+  const downloadQR = async (format: 'png' | 'svg' = 'png') => {
+    if (!restaurant) return;
+    try {
+      const QRCodeMod = await import('qrcode');
+      const QRCode = (QRCodeMod as any).toDataURL ?? (QRCodeMod.default as any)?.toDataURL ?? (QRCodeMod as any).toDataURL;
+      const QRCodeStr = (QRCodeMod as any).toString ?? (QRCodeMod.default as any)?.toString ?? (QRCodeMod as any).toString;
+      
+      let dataStr = '';
+      if (format === 'svg') {
+        dataStr = await QRCodeStr(qrMenuUrl, { type: 'svg', margin: 2, errorCorrectionLevel: 'H', color: { dark: themeColor, light: '#ffffff' } });
+        const blob = new Blob([dataStr], { type: 'image/svg+xml' });
+        dataStr = URL.createObjectURL(blob);
+      } else {
+        dataStr = await QRCode(qrMenuUrl, { width: 1024, margin: 2, errorCorrectionLevel: 'H', color: { dark: themeColor, light: '#ffffff' } });
+      }
+
+      const a = document.createElement('a'); 
+      a.href = dataStr; 
+      a.download = `${restaurant.slug}-menu-qr.${format}`; 
+      a.click();
+    } catch (e) { toast.error('Failed to download QR'); }
   };
+
+  const copyUrl = () => { navigator.clipboard.writeText(qrMenuUrl); toast.success('URL Copied'); };
+  const shareWhatsApp = () => { window.open(`https://api.whatsapp.com/send?text=Check out our menu: ${encodeURIComponent(qrMenuUrl)}`, '_blank'); };
+
+  const hasChanges = restaurant && (name !== restaurant.name || themeColor !== (restaurant.theme_color ?? '#e67e22') || logoUrl !== (restaurant.logo_url ?? '') || menuTemplate !== (restaurant.menu_template ?? 'classic'));
 
   if (loading) return <Spinner />;
 
@@ -98,22 +122,29 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
           {/* Brand Color */}
           <div className="field"><label style={lbl} htmlFor="theme-color">Brand Color</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <input id="theme-color" type="color" value={themeColor} onChange={e => setThemeColor(e.target.value)} style={{ width: 48, height: 40, border: 'none', borderRadius: 8, cursor: 'pointer', padding: 2, background: 'transparent' }} />
-              <input style={{ ...inp, flex: 1 }} value={themeColor} onChange={e => setThemeColor(e.target.value)} pattern="#[0-9a-fA-F]{6}" placeholder="#e67e22" />
-              <div style={{ width: 40, height: 40, borderRadius: 8, background: themeColor, border: '1px solid #e5e7eb', flexShrink: 0, transition: 'background .2s' }} />
+              <div style={{ position: 'relative', width: 44, height: 44, borderRadius: 10, overflow: 'hidden', border: '1px solid #e5e7eb', flexShrink: 0, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                <input id="theme-color" type="color" value={themeColor} onChange={e => setThemeColor(e.target.value)} style={{ position: 'absolute', top: -10, left: -10, width: 64, height: 64, border: 'none', cursor: 'pointer', padding: 0, background: 'transparent' }} />
+              </div>
+              <input style={{ ...inp, flex: 1, fontFamily: 'monospace', textTransform: 'uppercase' }} value={themeColor} onChange={e => setThemeColor(e.target.value)} pattern="#[0-9a-fA-F]{6}" placeholder="#e67e22" />
             </div>
-            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>Applied to your public menu page</p>
+            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>Applied to your public menu page and QR code</p>
           </div>
 
-          {/* Slug (read-only) */}
-          <div className="field"><label style={lbl}>Menu URL (read-only)</label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, background: '#f0f2f8', padding: '10px 14px', borderRadius: 8, border: '1px solid #e5e7eb' }}>
-              <code style={{ fontSize: 13, color: '#1a1a2e', wordBreak: 'break-all' }}>{typeof window !== 'undefined' ? window.location.origin : 'https://menuly.shop'}/menu/<strong>{restaurant?.slug}</strong></code>
-              <span style={{ fontSize: 12, color: '#9ca3af' }}>Contact the platform owner to change this URL</span>
+          {/* Slug & Links */}
+          <div className="field"><label style={lbl}>Menu Link</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f8f9fc', padding: '6px 6px 6px 14px', borderRadius: 10, border: '1px solid #e5e7eb' }}>
+              <span style={{ fontSize: 13, color: '#1a1a2e', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{qrMenuUrl}</span>
+              <button type="button" onClick={copyUrl} style={{ ...btnG, padding: '6px 10px' }} title="Copy URL"><Copy size={14} /></button>
+              <a href={qrMenuUrl} target="_blank" rel="noreferrer" style={{ ...btnG, padding: '6px 10px', textDecoration: 'none', display: 'flex' }} title="Open"><ExternalLink size={14} /></a>
+              <button type="button" onClick={shareWhatsApp} style={{ ...btnG, padding: '6px 10px', background: '#25D366', color: '#fff' }} title="Share on WhatsApp"><Share2 size={14} /></button>
             </div>
           </div>
 
-          <div><button type="submit" style={btnP} disabled={saving || uploading}>{saving ? 'Saving…' : 'Save Settings'}</button></div>
+          <div>
+            <button type="submit" style={{ ...btnP, opacity: (!hasChanges || saving || uploading) ? 0.5 : 1 }} disabled={!hasChanges || saving || uploading}>
+              {saving ? 'Saving…' : hasChanges ? 'Save Settings' : 'Saved'}
+            </button>
+          </div>
         </form>
 
         {/* Right: template + QR */}
@@ -167,8 +198,11 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={qrDataUrl} alt="Menu QR Code" style={{ width: 200, height: 200, borderRadius: 8 }} />
-                <div style={{ fontSize: 11, color: '#9ca3af', textAlign: 'center', wordBreak: 'break-all' }}>{qrMenuUrl}</div>
-                <button onClick={downloadQR} style={{ ...btnP, width: '100%', textAlign: 'center', padding: 12 }}>↓ Download QR Code</button>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, width: '100%', marginTop: 8 }}>
+                  <button onClick={() => downloadQR('png')} style={{ ...btnP, padding: '10px', fontSize: 13, display: 'flex', justifyContent: 'center', gap: 6 }}><Download size={14} /> PNG</button>
+                  <button onClick={() => downloadQR('svg')} style={{ ...btnG, padding: '10px', fontSize: 13, display: 'flex', justifyContent: 'center', gap: 6, border: '1px solid #e5e7eb' }}><Download size={14} /> SVG</button>
+                </div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: '#9ca3af', padding: '48px 0' }}><div style={{ fontSize: 40, opacity: 0.3 }}>📱</div><p>Generating QR…</p></div>
