@@ -27,7 +27,7 @@ export function useCategories(token: string | undefined) {
     queryKey: ['categories'],
     queryFn: async () => {
       const res = await apiFetch(token!, '/api/admin/categories');
-      return (res.data ?? []) as Category[];
+      return Array.isArray(res) ? res as Category[] : [];
     },
     enabled: !!token,
   });
@@ -38,7 +38,7 @@ export function useItems(token: string | undefined) {
     queryKey: ['items'],
     queryFn: async () => {
       const res = await apiFetch(token!, '/api/admin/items');
-      return (res.data ?? []) as MenuItem[];
+      return Array.isArray(res) ? res as MenuItem[] : [];
     },
     enabled: !!token,
   });
