@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "check-db.ts", "insert-plan.ts", "restore.ts", "supabase-admin.ts"]
 }
