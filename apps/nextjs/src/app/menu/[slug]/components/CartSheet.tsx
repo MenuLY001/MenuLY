@@ -40,6 +40,10 @@ export function CartSheet({
               <div key={item.id} className="mly-waiter-item">
                 <div className="mly-waiter-item__left">
                   <span className="mly-waiter-item__qty">×{item.qty}</span>
+                  {item.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.image_url} alt="" className="mly-waiter-item__img" />
+                  )}
                   <span className="mly-waiter-item__name">{item.name}</span>
                 </div>
                 <span className="mly-waiter-item__price">{fmt(item.price * item.qty)}</span>

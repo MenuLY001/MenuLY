@@ -212,8 +212,9 @@ export function MenuStyles() {
       .mly-waiter-items::-webkit-scrollbar { display:none; }
       .mly-waiter-item { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
       .mly-waiter-item__left { display:flex; gap:12px; align-items:flex-start; min-width:0; }
-      .mly-waiter-item__qty { font-size:18px; font-weight:900; color:var(--brand); flex-shrink:0; }
-      .mly-waiter-item__name { font-size:17px; font-weight:600; color:#fff; line-height:1.4; }
+      .mly-waiter-item__qty { font-size:18px; font-weight:900; color:var(--brand); flex-shrink:0; margin-top: 2px; }
+      .mly-waiter-item__img { width:32px; height:32px; border-radius:6px; object-fit:cover; flex-shrink:0; }
+      .mly-waiter-item__name { font-size:17px; font-weight:600; color:#fff; line-height:1.4; margin-top: 2px; }
       .mly-waiter-item__price { font-size:18px; font-weight:800; color:#888; flex-shrink:0; text-align:right; }
       .mly-waiter-total { display:flex; justify-content:space-between; align-items:center; font-size:18px; font-weight:700; color:#888; margin-bottom:32px; }
       .mly-waiter-total__price { font-size:32px; font-weight:900; color:#fff; }
