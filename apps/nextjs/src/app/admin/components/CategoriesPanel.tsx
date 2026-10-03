@@ -25,23 +25,16 @@ function SortableCategoryItem({ category, onEdit, onDelete }: { category: Catego
   );
 }
 
+import { useCategories } from './hooks';
+import { useQueryClient } from '@tanstack/react-query';
+
 export function CategoriesPanel({ token, toast }: { token: string; toast: ReturnType<typeof useToast> }) {
-  const [cats, setCats] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: cats = [], isLoading: loading } = useCategories(token);
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.resolve().then(() => { if (!cancelled) setLoading(true); });
-    apiFetch(token, '/api/admin/categories')
-      .then(d => { if (!cancelled) setCats(Array.isArray(d) ? d : []); })
-      .catch(() => { if (!cancelled) setCats([]); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [token]);
 
   const openCreate = () => { setEditing(null); setName(''); setModal(true); };
   const openEdit = (c: Category) => { setEditing(c); setName(c.name); setModal(true); };
@@ -50,12 +43,13 @@ export function CategoriesPanel({ token, toast }: { token: string; toast: Return
     e.preventDefault(); if (!name.trim()) return; setSaving(true);
     try {
       if (editing) {
-        const u = await apiFetch(token, `/api/admin/categories/${editing.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-        setCats(p => p.map(c => c.id === u.id ? u : c)); toast.success('Category updated');
+        await apiFetch(token, `/api/admin/categories/${editing.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+        toast.success('Category updated');
       } else {
-        const u = await apiFetch(token, '/api/admin/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-        setCats(p => [...p, u]); toast.success('Category created');
+        await apiFetch(token, '/api/admin/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+        toast.success('Category created');
       }
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
       setModal(false);
     } catch { toast.error('Failed to save category'); } finally { setSaving(false); }
   };
@@ -63,7 +57,8 @@ export function CategoriesPanel({ token, toast }: { token: string; toast: Return
   const del = async (c: Category) => {
     if (!confirm(`Delete "${c.name}"? All items in this category will also be deleted.`)) return;
     await apiFetch(token, `/api/admin/categories/${c.id}`, { method: 'DELETE' });
-    setCats(p => p.filter(x => x.id !== c.id)); toast.success('Category deleted');
+    queryClient.invalidateQueries({ queryKey: ['categories'] });
+    toast.success('Category deleted');
   };
 
   const sensors = useSensors(
@@ -81,7 +76,7 @@ export function CategoriesPanel({ token, toast }: { token: string; toast: Return
       
       // Apply new sort orders based on index
       const updatedCats = newCats.map((c, i) => ({ ...c, sort_order: i }));
-      setCats(updatedCats);
+      queryClient.setQueryData(['categories'], updatedCats);
       
       // Save all updated sort orders
       Promise.all(updatedCats.map(c => 

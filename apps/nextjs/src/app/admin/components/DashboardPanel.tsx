@@ -1,49 +1,30 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { type Restaurant, type Category, type MenuItem } from './types';
-import { useToast, BRAND, Spinner, apiFetch } from './shared';
+import { type Restaurant } from './types';
+import { useToast, BRAND, Spinner } from './shared';
 import { CheckCircle2, Circle, ExternalLink, QrCode, Smartphone } from 'lucide-react';
+import { useCategories, useItems } from './hooks';
 
-export function DashboardPanel({ token, onNavigate }: { token: string; onNavigate: (tab: string) => void }) {
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [items, setItems] = useState<MenuItem[]>([]);
-  const [loading, setLoading] = useState(true);
+export function DashboardPanel({ token, onNavigate, rest }: { token: string; onNavigate: (tab: string) => void; rest: Restaurant | null }) {
+  const { data: categories = [], isLoading: catLoading } = useCategories(token);
+  const { data: items = [], isLoading: itemLoading } = useItems(token);
+  
+  if (catLoading || itemLoading) return <Spinner />;
+  if (!rest) return <div>Error loading dashboard.</div>;
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([
-      apiFetch(token, '/api/admin/restaurant'),
-      apiFetch(token, '/api/admin/categories'),
-      apiFetch(token, '/api/admin/items')
-    ]).then(([r, c, i]) => {
-      if (cancelled) return;
-      if (r && r.id) setRestaurant(r);
-      if (Array.isArray(c)) setCategories(c);
-      if (Array.isArray(i)) setItems(i);
-      setLoading(false);
-    }).catch(() => {
-      if (!cancelled) setLoading(false);
-    });
-    return () => { cancelled = true; };
-  }, [token]);
-
-  if (loading) return <Spinner />;
-  if (!restaurant) return <div>Error loading dashboard.</div>;
-
-  const menuUrl = typeof window !== 'undefined' ? `${window.location.origin}/menu/${restaurant.slug}` : '';
+  const menuUrl = typeof window !== 'undefined' ? `${window.location.origin}/menu/${rest.slug}` : '';
 
   const checklist = [
     { id: 'cat', label: 'Create your first category', done: categories.length > 0, tab: 'categories' },
     { id: 'item', label: 'Add at least 3 menu items', done: items.length >= 3, tab: 'items' },
-    { id: 'brand', label: 'Upload your logo in settings', done: !!restaurant.logo_url, tab: 'settings' },
+    { id: 'brand', label: 'Upload your logo in settings', done: !!rest.logo_url, tab: 'settings' },
   ];
   const progress = Math.round((checklist.filter(c => c.done).length / checklist.length) * 100);
 
   return (
     <div className="panel" style={{ gap: 32 }}>
       <div>
-        <h1 className="panel__title" style={{ fontSize: 28 }}>Welcome back, {restaurant.name}! 👋</h1>
+        <h1 className="panel__title" style={{ fontSize: 28 }}>Welcome back, {rest.name}! 👋</h1>
         <p className="panel__subtitle">Here's what's happening with your menu today.</p>
       </div>
 

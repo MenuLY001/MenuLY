@@ -13,15 +13,24 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { BillingPanel } from './components/BillingPanel';
 import { SignInScreen } from './components/SignInScreen';
 import { LayoutDashboard, List, Settings, CreditCard, ExternalLink, LogOut, Home } from 'lucide-react';
+import { useRestaurant } from './components/hooks';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [tab, setTab] = useState<Tab>('dashboard');
-  const [loading, setLoading] = useState(true);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const toastObj = useToast();
   const { toasts } = toastObj;
+  const queryClient = useQueryClient();
+  const token = session?.access_token;
+
+  const prefetchCategories = () => {
+    if (token) queryClient.prefetchQuery({ queryKey: ['categories'], queryFn: async () => { const res = await apiFetch(token!, '/api/admin/categories'); return Array.isArray(res) ? res : []; } });
+  };
+  const prefetchItems = () => {
+    if (token) queryClient.prefetchQuery({ queryKey: ['items'], queryFn: async () => { const res = await apiFetch(token!, '/api/admin/items'); return Array.isArray(res) ? res : []; } });
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -31,37 +40,13 @@ export default function AdminPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const token = session?.access_token;
-    let cancelled = false;
-    if (!token) {
-      Promise.resolve().then(() => { if (!cancelled) setLoading(false); });
-      return () => { cancelled = true; };
-    }
-    Promise.resolve().then(() => { if (!cancelled) setLoading(true); });
-    apiFetch(token, '/api/admin/restaurant')
-      .then(async r => {
-        if (cancelled) return;
-        if (r && r.id !== undefined) {
-          setRestaurant(r);
-        } else {
-          const create = await apiFetch(token, '/api/admin/restaurant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'My Restaurant' }) });
-          if (!cancelled) setRestaurant(create);
-        }
-      })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [session]);
+  const { data: restaurant, isLoading: restaurantLoading } = useRestaurant(token);
 
-  if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Spinner /></div>;
+  if (session && restaurantLoading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Spinner /></div>;
 
   if (!session) {
     return <SignInScreen />;
   }
-
-
-  const token = session.access_token;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fc', color: '#1a1a2e' }}>
@@ -87,15 +72,16 @@ export default function AdminPage() {
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
           {[
-            { id: 'dashboard', label: 'Dashboard', icon: <Home size={18} /> },
-            { id: 'categories', label: 'Categories', icon: <LayoutDashboard size={18} /> },
-            { id: 'items', label: 'Menu Items', icon: <List size={18} /> },
+            { id: 'dashboard', label: 'Dashboard', icon: <Home size={18} />, onHover: () => { prefetchCategories(); prefetchItems(); } },
+            { id: 'categories', label: 'Categories', icon: <LayoutDashboard size={18} />, onHover: prefetchCategories },
+            { id: 'items', label: 'Menu Items', icon: <List size={18} />, onHover: () => { prefetchCategories(); prefetchItems(); } },
             { id: 'settings', label: 'Settings & QR', icon: <Settings size={18} /> },
             { id: 'billing', label: 'Billing', icon: <CreditCard size={18} /> },
           ].map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id as Tab)}
+              onMouseEnter={t.onHover}
               style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, border: 'none', background: tab === t.id ? '#f0f2f8' : 'transparent', color: tab === t.id ? '#1a1a2e' : '#6b7280', fontSize: 14, fontWeight: tab === t.id ? 700 : 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'background .15s' }}
             >
               <div style={{ color: tab === t.id ? '#1a1a2e' : '#9ca3af' }}>{t.icon}</div>
@@ -142,11 +128,11 @@ export default function AdminPage() {
         {/* Content */}
         <div style={{ flex: 1, padding: '24px 32px 100px', maxWidth: 1200, margin: '0 auto', width: '100%' }} className="admin-content">
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-          {tab === 'dashboard'  && <DashboardPanel  token={token} onNavigate={(t) => setTab(t as Tab)} />}
-          {tab === 'categories' && <CategoriesPanel token={token} toast={toastObj} />}
-          {tab === 'items'      && <ItemsPanel      token={token} toast={toastObj} />}
-          {tab === 'settings'   && <SettingsPanel   token={token} toast={toastObj} onRestaurantUpdate={setRestaurant} />}
-          {tab === 'billing'    && <BillingPanel    token={token} toast={toastObj} />}
+          {tab === 'dashboard'  && <DashboardPanel  token={token!} rest={restaurant ?? null} onNavigate={(t) => setTab(t as Tab)} />}
+          {tab === 'categories' && <CategoriesPanel token={token!} toast={toastObj} />}
+          {tab === 'items'      && <ItemsPanel      token={token!} toast={toastObj} />}
+          {tab === 'settings'   && <SettingsPanel   token={token!} toast={toastObj} onRestaurantUpdate={(r) => queryClient.setQueryData(['restaurant'], r)} />}
+          {tab === 'billing'    && <BillingPanel    token={token!} toast={toastObj} />}
         </div>
       </div>
 

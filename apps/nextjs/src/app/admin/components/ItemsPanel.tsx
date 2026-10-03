@@ -48,12 +48,17 @@ function SortableMenuItem({ item, catName, onToggle, onEdit, onDelete, showDrag 
   );
 }
 
+import { useQueryClient } from '@tanstack/react-query';
+import { useCategories, useItems } from './hooks';
+
 const EMPTY_FORM = { category_id: '', name: '', description: '', price: '', image_url: '', is_available: true, is_veg: true, is_special: false, is_todays_special: false };
 
 export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<typeof useToast> }) {
-  const [items, setItems] = useState<MenuItem[]>([]);
-  const [cats, setCats] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: cats = [], isLoading: catLoading } = useCategories(token);
+  const { data: items = [], isLoading: itemLoading } = useItems(token);
+  const loading = catLoading || itemLoading;
+  
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<MenuItem | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -63,24 +68,6 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const fileRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.resolve().then(() => { if (!cancelled) setLoading(true); });
-    Promise.all([
-      apiFetch(token, '/api/admin/items'),
-      apiFetch(token, '/api/admin/categories'),
-    ])
-      .then(([id, cd]) => {
-        if (!cancelled) {
-          setItems(Array.isArray(id) ? id : []);
-          setCats(Array.isArray(cd) ? cd : []);
-        }
-      })
-      .catch(() => { if (!cancelled) { setItems([]); setCats([]); } })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [token]);
 
   const openCreate = () => { setEditing(null); setForm({ ...EMPTY_FORM, category_id: cats[0]?.id ?? '' }); setModal(true); };
   const openEdit = (item: MenuItem) => {
@@ -109,12 +96,13 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
     try {
       const payload = { ...form, price, description: form.description || undefined, image_url: form.image_url || undefined };
       if (editing) {
-        const u = await apiFetch(token, `/api/admin/items/${editing.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        setItems(p => p.map(i => i.id === u.id ? u : i)); toast.success('Item updated');
+        await apiFetch(token, `/api/admin/items/${editing.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        toast.success('Item updated');
       } else {
-        const u = await apiFetch(token, '/api/admin/items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        setItems(p => [...p, u]); toast.success('Item created');
+        await apiFetch(token, '/api/admin/items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        toast.success('Item created');
       }
+      queryClient.invalidateQueries({ queryKey: ['items'] });
       setModal(false);
     } catch { toast.error('Failed to save item'); } finally { setSaving(false); }
   };
@@ -122,12 +110,13 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
   const del = async (item: MenuItem) => {
     if (!confirm(`Delete "${item.name}"?`)) return;
     await apiFetch(token, `/api/admin/items/${item.id}`, { method: 'DELETE' });
-    setItems(p => p.filter(i => i.id !== item.id)); toast.success('Item deleted');
+    queryClient.invalidateQueries({ queryKey: ['items'] });
+    toast.success('Item deleted');
   };
 
   const toggleAvail = async (item: MenuItem) => {
-    const u = await apiFetch(token, `/api/admin/items/${item.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_available: !item.is_available }) });
-    setItems(p => p.map(i => i.id === u.id ? u : i));
+    await apiFetch(token, `/api/admin/items/${item.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_available: !item.is_available }) });
+    queryClient.invalidateQueries({ queryKey: ['items'] });
   };
 
   const filtered = items.filter(i => {
@@ -160,7 +149,7 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
       const newItems = arrayMove(items, oldIndex, newIndex);
       
       const updatedItems = newItems.map((item, i) => ({ ...item, sort_order: i }));
-      setItems(updatedItems);
+      queryClient.setQueryData(['items'], updatedItems);
       
       Promise.all(updatedItems.map(item => 
         apiFetch(token, `/api/admin/items/${item.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sort_order: item.sort_order }) })
@@ -309,7 +298,7 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
                         <div style={{ width: 44, height: 24, backgroundColor: form.is_special ? '#f59e0b' : '#d1d5db', borderRadius: 20, transition: 'background-color 0.2s ease' }} />
                         <div style={{ position: 'absolute', top: 2, left: form.is_special ? 22 : 2, width: 20, height: 20, backgroundColor: '#fff', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
                       </div>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Chef's Special</span>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Chef`&apos`s Special</span>
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: 12 }}>
                       <div style={{ position: 'relative' }}>
@@ -317,7 +306,7 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
                         <div style={{ width: 44, height: 24, backgroundColor: form.is_todays_special ? '#3b82f6' : '#d1d5db', borderRadius: 20, transition: 'background-color 0.2s ease' }} />
                         <div style={{ position: 'absolute', top: 2, left: form.is_todays_special ? 22 : 2, width: 20, height: 20, backgroundColor: '#fff', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
                       </div>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Today's Special</span>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Today`&apos`s Special</span>
                     </label>
                   </div>
                 </div>
