@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import type { RestaurantRow, FilterState, SortKey, SortDir } from './types';
 import { relativeDate, fullDate, trialDaysLeft } from './helpers';
+import { ArrowUpDown, ArrowDown, ArrowUp, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   restaurants: RestaurantRow[];
@@ -33,6 +35,7 @@ function TrialIndicator({ trialEndsAt, status }: { trialEndsAt: string | null; s
 }
 
 export function RestaurantTable({ restaurants, filter, search, actionLoading, onActivate, onSuspend, onManage }: Props) {
+  const router = useRouter();
   const [sortKey, setSortKey] = useState<SortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [page, setPage] = useState(1);
@@ -62,8 +65,8 @@ export function RestaurantTable({ restaurants, filter, search, actionLoading, on
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const renderSortIcon = (col: SortKey) => {
-    if (sortKey !== col) return <span style={{ opacity: .3, marginLeft: 4, fontSize: 10 }}>⇅</span>;
-    return <span style={{ marginLeft: 4, fontSize: 10, color: '#a5b4fc' }}>{sortDir === 'asc' ? '↑' : '↓'}</span>;
+    if (sortKey !== col) return <ArrowUpDown size={12} style={{ opacity: .3, marginLeft: 4 }} />;
+    return sortDir === 'asc' ? <ArrowUp size={12} color="#a5b4fc" style={{ marginLeft: 4 }} /> : <ArrowDown size={12} color="#a5b4fc" style={{ marginLeft: 4 }} />;
   };
 
   const thStyle = (col?: SortKey): React.CSSProperties => ({
@@ -75,7 +78,7 @@ export function RestaurantTable({ restaurants, filter, search, actionLoading, on
 
   if (!filtered.length) return (
     <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,.3)', fontSize: 15 }}>
-      <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+      <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}><Search size={40} opacity={0.5} /></div>
       No restaurants match your filters.
     </div>
   );
@@ -98,7 +101,8 @@ export function RestaurantTable({ restaurants, filter, search, actionLoading, on
               const sc = STATUS_CONFIG[r.status] ?? { label: r.status, bg: 'rgba(255,255,255,.08)', color: '#a1a1aa' };
               const sub = r.subscription;
               return (
-                <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,.04)', transition: 'background .15s' }}
+                <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,.04)', transition: 'background .15s', cursor: 'pointer' }}
+                  onClick={() => router.push(`/superadmin/restaurants/${r.id}`)}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.02)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
 
@@ -106,6 +110,7 @@ export function RestaurantTable({ restaurants, filter, search, actionLoading, on
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ fontWeight: 700, color: '#f2f2f5', marginBottom: 3 }}>{r.name}</div>
                     <a href={`https://menuly.shop/menu/${r.slug}`} target="_blank" rel="noreferrer"
+                      onClick={e => e.stopPropagation()}
                       style={{ fontSize: 12, color: 'rgba(255,255,255,.35)', textDecoration: 'none', transition: 'color .15s' }}
                       onMouseEnter={e => ((e.target as HTMLElement).style.color = '#e67e22')}
                       onMouseLeave={e => ((e.target as HTMLElement).style.color = 'rgba(255,255,255,.35)')}>
@@ -148,17 +153,17 @@ export function RestaurantTable({ restaurants, filter, search, actionLoading, on
                   <td style={{ padding: '14px 16px' }}>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                       {r.status !== 'active' && (
-                        <button onClick={() => onActivate(r.id, r.name)} disabled={!!actionLoading}
+                        <button onClick={(e) => { e.stopPropagation(); onActivate(r.id, r.name); }} disabled={!!actionLoading}
                           style={{ padding: '5px 12px', background: 'rgba(34,197,94,.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,.25)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity .15s' }}>
                           {actionLoading === r.id + 'active' ? '…' : 'Activate'}
                         </button>
                       )}
-                      <button onClick={() => onManage(r)} disabled={!!actionLoading}
+                      <button onClick={(e) => { e.stopPropagation(); onManage(r); }} disabled={!!actionLoading}
                         style={{ padding: '5px 12px', background: 'rgba(165,180,252,.1)', color: '#a5b4fc', border: '1px solid rgba(165,180,252,.2)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
                         Manage
                       </button>
                       {r.status !== 'suspended' && (
-                        <button onClick={() => onSuspend(r)} disabled={!!actionLoading}
+                        <button onClick={(e) => { e.stopPropagation(); onSuspend(r); }} disabled={!!actionLoading}
                           style={{ padding: '5px 12px', background: 'transparent', color: 'rgba(248,113,113,.6)', border: '1px solid rgba(248,113,113,.2)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s' }}
                           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,.15)'; (e.currentTarget as HTMLElement).style.color = '#f87171'; }}
                           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(248,113,113,.6)'; }}>

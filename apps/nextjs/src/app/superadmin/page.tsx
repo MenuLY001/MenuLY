@@ -8,6 +8,8 @@ import { StatCards } from './components/StatCards';
 import { RestaurantTable } from './components/RestaurantTable';
 import { ManageModal, SuspendModal } from './components/Modals';
 
+import { Shield, RefreshCw, Search, Download } from 'lucide-react';
+
 // ── Shared input/button styles ───────────────────────────────────────────────
 const inp: React.CSSProperties = { width: '100%', padding: '10px 14px', borderRadius: 8, border: '1.5px solid rgba(255,255,255,.1)', fontSize: 14, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit', background: '#13131a', color: '#f2f2f5' };
 const btn: React.CSSProperties = { width: '100%', padding: '11px 0', background: '#e67e22', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' };
@@ -79,7 +81,7 @@ export default function SuperAdminPage() {
   if (!token) return (
     <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0f13', color: '#f2f2f5', fontFamily: 'Inter,sans-serif' }}>
       <div style={{ background: '#1a1a24', borderRadius: 16, padding: 36, width: '100%', maxWidth: 360, border: '1px solid rgba(255,255,255,.08)', boxShadow: '0 20px 60px rgba(0,0,0,.5)', textAlign: 'center' }}>
-        <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(165,180,252,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, margin: '0 auto 16px' }}>🛡️</div>
+        <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(165,180,252,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#a5b4fc' }}><Shield size={26} /></div>
         <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px', color: '#f2f2f5' }}>Super Admin</h1>
         <p style={{ color: 'rgba(255,255,255,.4)', fontSize: 14, marginBottom: 28 }}>Menuly Platform Control</p>
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -119,7 +121,7 @@ export default function SuperAdminPage() {
       {/* Header */}
       <div style={{ background: '#1a1a24', padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,.06)', position: 'sticky', top: 0, zIndex: 100, backdropFilter: 'blur(12px)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 18 }}>🛡️</span>
+          <Shield size={20} color="#a5b4fc" />
           <span style={{ fontWeight: 800, fontSize: 17, color: '#f2f2f5' }}>Menuly Super Admin</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -129,8 +131,8 @@ export default function SuperAdminPage() {
             </span>
           )}
           <button onClick={refresh} disabled={loading}
-            style={{ padding: '7px 16px', background: 'rgba(255,255,255,.07)', color: '#f2f2f5', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
-            {loading ? 'Refreshing…' : '↻ Refresh'}
+            style={{ padding: '7px 16px', background: 'rgba(255,255,255,.07)', color: '#f2f2f5', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <RefreshCw size={14} className={loading ? 'spin' : ''} /> Refresh
           </button>
         </div>
       </div>
@@ -146,7 +148,7 @@ export default function SuperAdminPage() {
 
           {/* Search */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#13131a', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, padding: '0 12px', height: 38, minWidth: 220 }}>
-            <span style={{ color: 'rgba(255,255,255,.3)', fontSize: 14 }}>🔍</span>
+            <Search size={16} color="rgba(255,255,255,.3)" />
             <input placeholder="Search name or slug…" value={search} onChange={e => setSearch(e.target.value)}
               style={{ background: 'none', border: 'none', outline: 'none', color: '#f2f2f5', fontSize: 13, fontFamily: 'inherit', width: '100%' }} />
             {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.4)', fontSize: 16, cursor: 'pointer', padding: 0, lineHeight: 1 }}>✕</button>}
@@ -165,7 +167,7 @@ export default function SuperAdminPage() {
           {/* CSV Download */}
           <button onClick={() => downloadCSV(restaurants as RestaurantRow[])} disabled={!restaurants.length}
             style={{ padding: '7px 14px', background: 'rgba(255,255,255,.05)', color: 'rgba(255,255,255,.6)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
-            ↓ CSV
+            <Download size={14} /> CSV
           </button>
         </div>
 
@@ -193,6 +195,8 @@ export default function SuperAdminPage() {
       <style>{`
         @keyframes saFadeIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes saPulse { 0%,100%{opacity:.4} 50%{opacity:.7} }
+        @keyframes saSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .spin { animation: saSpin 1s linear infinite; }
         * { box-sizing: border-box; }
       `}</style>
     </div>
