@@ -35,11 +35,11 @@ export default function SuperAdminPage() {
   const [extendDays, setExtendDays] = useState<Record<string, string>>({});
   const [toasts, setToasts] = useState<{ id:string; type:'success'|'error'|'info'; title:string; msg?:string }[]>([]);
 
-  const addToast = (type: 'success'|'error'|'info', title: string, msg?: string) => {
+  const addToast = useCallback((type: 'success'|'error'|'info', title: string, msg?: string) => {
     const id = Math.random().toString(36).slice(2);
     setToasts(p => [...p, { id, type, title, msg }]);
     setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), type === 'error' ? 6000 : 4000);
-  };
+  }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault(); setLoggingIn(true); setLoginError('');

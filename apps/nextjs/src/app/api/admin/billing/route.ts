@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Razorpay from 'razorpay';
 import { getAdminContext } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-
-function getRazorpay() {
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  if (!keyId || !keySecret) throw new Error('Razorpay keys not configured');
-  return new Razorpay({ key_id: keyId, key_secret: keySecret });
-}
 
 // GET /api/admin/billing
 export async function GET(req: NextRequest) {

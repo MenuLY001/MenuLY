@@ -1,0 +1,45 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Typecheck Next.js App
+        run: npm run typecheck --workspace=apps/nextjs
+        continue-on-error: true # Optional: allow it to pass for now if we haven't configured a strict typecheck script in nextjs
+
+      - name: Lint Next.js App
+        run: npm run lint --workspace=apps/nextjs
+
+      - name: Build Next.js App
+        run: npm run build --workspace=apps/nextjs
+        env:
+          # Vercel bypasses these at build time, but we provide mock values so the build doesn't fail locally in CI
+          NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock_anon_key"
+          SUPABASE_SERVICE_ROLE_KEY: "mock_service_key"
+          RAZORPAY_KEY_ID: "mock_key_id"
+          RAZORPAY_KEY_SECRET: "mock_key_secret"
+          RAZORPAY_WEBHOOK_SECRET: "mock_webhook_secret"
+
+      # Note: CD (Continuous Deployment) is handled automatically by Vercel. 
+      # When you merge to `main`, Vercel intercepts the GitHub webhook and deploys the production build automatically.

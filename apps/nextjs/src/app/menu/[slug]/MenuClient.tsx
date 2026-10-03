@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface Category { id: string; name: string; sort_order: number; }
 interface MenuItem  {
@@ -28,50 +29,7 @@ function VegIcon({ isVeg }: { isVeg: boolean }) {
   );
 }
 
-function MenuItemCard({ item, viewMode }: { item: MenuItem; viewMode: 'list' | 'grid' }) {
-  const isGrid = viewMode === 'grid';
-  return (
-    <div style={{
-      background: '#fff', borderRadius: 14, overflow: 'hidden',
-      border: '1px solid #f0f0f0', boxShadow: '0 1px 6px rgba(0,0,0,.05)',
-      display: isGrid ? 'flex' : 'flex', flexDirection: isGrid ? 'column' : 'row',
-      transition: 'box-shadow .15s',
-    }}>
-      {item.image_url && (
-        <img src={item.image_url} alt={item.name}
-          style={{
-            width: isGrid ? '100%' : 100, height: isGrid ? 160 : 100,
-            objectFit: 'cover', flexShrink: 0,
-          }} />
-      )}
-      <div style={{ padding: isGrid ? 12 : 14, flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 }}>
-          <VegIcon isVeg={item.is_veg} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', lineHeight: 1.3 }}>
-              {item.name}
-              {item.is_special && (
-                <span style={{ marginLeft: 6, fontSize: 10, background: '#fff3e0', color: '#e67e22',
-                  fontWeight: 700, padding: '1px 6px', borderRadius: 4, verticalAlign: 'middle' }}>
-                  Chef&apos;s Special
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        {item.description && !isGrid && (
-          <p style={{ fontSize: 12, color: '#9ca3af', margin: '4px 0', lineHeight: 1.4,
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {item.description}
-          </p>
-        )}
-        <div style={{ fontWeight: 800, color: '#e67e22', fontSize: 15, marginTop: 6 }}>
-          ₹{item.price}
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 export function MenuClient({ restaurant, categories, items }: Props) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -184,11 +142,14 @@ export function MenuClient({ restaurant, categories, items }: Props) {
                     display: 'flex', flexDirection: viewMode === 'grid' ? 'column' : 'row',
                   }}>
                     {item.image_url && (
-                      <img src={item.image_url} alt={item.name} style={{
+                      <div style={{
+                        position: 'relative',
                         width: viewMode === 'grid' ? '100%' : 100,
                         height: viewMode === 'grid' ? 150 : 100,
-                        objectFit: 'cover', flexShrink: 0,
-                      }} />
+                        flexShrink: 0
+                      }}>
+                        <Image src={item.image_url} alt={item.name} fill style={{ objectFit: 'cover' }} />
+                      </div>
                     )}
                     <div style={{ padding: 12, flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 4 }}>
