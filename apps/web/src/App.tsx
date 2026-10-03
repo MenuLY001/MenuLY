@@ -5,6 +5,7 @@ import { Dashboard } from './admin/Dashboard';
 import { LoginPage } from './admin/LoginPage';
 import { AuthProvider, useAuth } from './admin/AuthContext';
 import { RegisterPage } from './pages/RegisterPage';
+import { SuperAdminPage } from './pages/SuperAdminPage';
 
 function AdminRoute() {
   const { session, loading } = useAuth();
@@ -45,6 +46,9 @@ export function App() {
 
               {/* Self-serve registration + payment setup */}
               <Route path="/register" element={<RegisterPage />} />
+
+              {/* Super admin — has its own login gate */}
+              <Route path="/superadmin" element={<SuperAdminPage />} />
 
               {/* Admin routes — auth-gated */}
               <Route path="/admin" element={<AdminRoute />} />

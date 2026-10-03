@@ -11,6 +11,7 @@ import restaurantRouter from './routes/admin/restaurant';
 import billingRouter from './routes/admin/billing';
 import authRegisterRouter from './routes/auth/register';
 import razorpayWebhookRouter from './routes/webhooks/razorpay';
+import superAdminRouter from './routes/superadmin/index';
 import { errorHandler, notFound } from './middleware/errorHandler';
 
 const app = express();
@@ -83,6 +84,9 @@ app.use('/api/admin/items',      adminLimiter, itemsRouter);
 app.use('/api/admin/upload',     adminLimiter, uploadRouter);
 app.use('/api/admin/restaurant', adminLimiter, restaurantRouter);
 app.use('/api/admin/billing',    adminLimiter, billingRouter);
+
+// Super admin (requires valid JWT + super_admins table row)
+app.use('/api/superadmin', adminLimiter, superAdminRouter);
 
 // Health checks
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));

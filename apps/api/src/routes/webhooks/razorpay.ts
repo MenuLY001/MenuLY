@@ -326,26 +326,39 @@ async function handlePaymentCaptured(payload: Record<string, unknown>): Promise<
   const paymentEntity = getPaymentEntity(payload);
   if (!paymentEntity) return;
 
+  const razorpayPaymentId = paymentEntity['id'] as string | undefined;
   const subId = paymentEntity['subscription_id'] as string | undefined;
-  if (!subId) return;
 
-  const restaurantId = await getRestaurantIdBySubscription(subId);
-  if (!restaurantId) return;
+  // For the very first subscription auth payment, subscription_id may be null.
+  // In that case we still record the payment if we can find the subscription.
+  let restaurantId: string | null = null;
+  let ourSubId: string | null = null;
 
-  const { data: sub } = await supabaseAdmin
-    .from('subscriptions')
-    .select('id')
-    .eq('razorpay_subscription_id', subId)
-    .maybeSingle();
+  if (subId) {
+    restaurantId = await getRestaurantIdBySubscription(subId);
+    const { data: sub } = await supabaseAdmin
+      .from('subscriptions')
+      .select('id')
+      .eq('razorpay_subscription_id', subId)
+      .maybeSingle();
+    ourSubId = sub?.id ?? null;
+  }
+
+  if (!restaurantId || !razorpayPaymentId) {
+    console.log('[Webhook] payment.captured: skipping — no restaurant link or payment ID', { subId, razorpayPaymentId });
+    return;
+  }
 
   await supabaseAdmin.from('payments').upsert({
     restaurant_id:       restaurantId,
-    subscription_id:     sub?.id ?? null,
-    razorpay_payment_id: paymentEntity['id'] as string,
+    subscription_id:     ourSubId,
+    razorpay_payment_id: razorpayPaymentId,
     amount_paise:        Number(paymentEntity['amount'] ?? 0),
     currency:            (paymentEntity['currency'] as string) ?? 'INR',
     status:              'captured',
   }, { onConflict: 'razorpay_payment_id' });
+
+  console.log(`[Webhook] Payment ${razorpayPaymentId} captured for restaurant ${restaurantId}`);
 }
 
 async function handlePaymentFailed(payload: Record<string, unknown>): Promise<void> {

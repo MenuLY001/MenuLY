@@ -157,7 +157,7 @@ router.post('/create-subscription', async (req: Request, res: Response): Promise
       },
     } as Parameters<typeof rzp.subscriptions.create>[0]);
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
+    const msg = err instanceof Error ? err.message : JSON.stringify(err);
     console.error('[Billing/create-subscription] Razorpay error:', msg);
     res.status(502).json({ error: `Failed to create Razorpay subscription: ${msg}` });
     return;
