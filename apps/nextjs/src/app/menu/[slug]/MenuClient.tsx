@@ -8,6 +8,7 @@ import { CartSheet } from './components/CartSheet';
 import { MenuStyles } from './components/MenuStyles';
 import { Search, Phone, MapPin, X, Menu as MenuIcon, ShoppingBag } from 'lucide-react';
 import type { CartItem } from './components/types';
+import { fmt } from './components/helpers';
 
 export function MenuClient({ restaurant, categories, items }: Props) {
   const brand = restaurant.theme_color ?? '#e67e22';
