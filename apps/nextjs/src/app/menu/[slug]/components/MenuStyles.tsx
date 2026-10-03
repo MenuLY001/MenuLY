@@ -124,6 +124,9 @@ export function MenuStyles() {
       
       .mly-item__footer { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:auto; }
       .mly-item__price { font-size:16px; font-weight:800; color:#fff; }
+      .mly-item__add { width:32px; height:32px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; line-height:1; cursor:pointer; transition:transform .2s; padding:0; margin:0; }
+      .mly-item__add:hover { transform:scale(1.08); }
+      .mly-item__add:active { transform:scale(0.92); }
       .mly-item__unavailable { font-size:12px; color:#888; font-weight:600; text-transform:uppercase; letter-spacing:1px; }
 
       .mly-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:80px 20px; color:#888; font-size:16px; text-align:center; }

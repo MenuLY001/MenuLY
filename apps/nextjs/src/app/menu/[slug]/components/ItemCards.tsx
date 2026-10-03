@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import type { MenuItem } from './types';
 import { fmt } from './helpers';
+import { Plus } from 'lucide-react';
 import { VegDot } from './VegDot';
 
 export function SpecialCard({ item, brand, onOpen }: { item: MenuItem; brand: string; onOpen: (i: MenuItem) => void }) {
@@ -75,7 +76,7 @@ export function ItemRow({ item, brand, onOpen }: { item: MenuItem; brand: string
           <div className="mly-item__footer">
             <span className="mly-item__price">{fmt(item.price)}</span>
             {item.is_available
-              ? <button className="mly-item__add" style={{ background: brand, boxShadow: `0 0 12px ${brand}44` }} onClick={e => { e.stopPropagation(); onOpen(item); }}>+</button>
+              ? <button className="mly-item__add" style={{ background: brand, boxShadow: `0 0 12px ${brand}44` }} onClick={e => { e.stopPropagation(); onOpen(item); }}><Plus size={20} strokeWidth={3} /></button>
               : <span className="mly-item__unavailable">Sold Out</span>
             }
           </div>
