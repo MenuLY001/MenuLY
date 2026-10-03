@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getSuperAdminContext } from '@/lib/auth';
 
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const token = authHeader.split(' ')[1];
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
-    const { data: adminCheck } = await supabaseAdmin.from('super_admins').select('*').eq('email', user.email).maybeSingle();
-    if (!adminCheck) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await getSuperAdminContext(req);
 
     const params = await props.params;
     const { id } = params;
@@ -44,6 +37,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
     return NextResponse.json({ message: 'Password updated successfully' });
   } catch (err) {
+    if (err instanceof Response) return err;
     console.error('Failed to reset password:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

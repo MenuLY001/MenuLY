@@ -1,24 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getSuperAdminContext } from '@/lib/auth';
 
 export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const token = authHeader.split(' ')[1];
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    
-    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
-    // Check if user is super admin
-    const { data: adminCheck } = await supabaseAdmin
-      .from('super_admins')
-      .select('*')
-      .eq('email', user.email)
-      .maybeSingle();
-
-    if (!adminCheck) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await getSuperAdminContext(req);
 
     const params = await props.params;
     const { id } = params;
@@ -56,6 +42,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
 
     return NextResponse.json({ restaurant, adminEmail });
   } catch (err) {
+    if (err instanceof Response) return err;
     console.error('Failed to load restaurant details:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -63,15 +50,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
 
 export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const token = authHeader.split(' ')[1];
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
-    const { data: adminCheck } = await supabaseAdmin.from('super_admins').select('*').eq('email', user.email).maybeSingle();
-    if (!adminCheck) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await getSuperAdminContext(req);
 
     const params = await props.params;
     const { id } = params;
@@ -93,6 +72,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     
     return NextResponse.json(data);
   } catch (err) {
+    if (err instanceof Response) return err;
     console.error('Failed to update restaurant:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
