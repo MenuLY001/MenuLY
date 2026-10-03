@@ -11,3 +11,4 @@ export interface Restaurant {
   phone?: string; address?: string;
 }
 export interface Props { restaurant: Restaurant; categories: Category[]; items: MenuItem[]; }
+export interface CartItem extends MenuItem { qty: number; }

@@ -181,6 +181,47 @@ export function MenuStyles() {
       .mly-sheet__order-btn:active { transform:scale(.98); }
       .mly-sheet__unavailable-banner { width:100%; padding:16px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:14px; text-align:center; font-size:15px; font-weight:600; color:#888; text-transform:uppercase; letter-spacing:1px; }
 
+      /* Cart Sheet */
+      .mly-cart-items { padding:8px 24px 24px; display:flex; flex-direction:column; gap:16px; }
+      .mly-cart-empty { text-align:center; padding:40px 0; color:#888; font-size:16px; font-weight:500; }
+      .mly-cart-item { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.04); padding:12px; border-radius:16px; }
+      .mly-cart-item__img { width:48px; height:48px; border-radius:10px; object-fit:cover; }
+      .mly-cart-item__img-placeholder { width:48px; height:48px; border-radius:10px; background:rgba(255,255,255,.05); display:flex; align-items:center; justify-content:center; font-size:20px; }
+      .mly-cart-item__info { flex:1; min-width:0; }
+      .mly-cart-item__name { font-size:15px; font-weight:700; color:#f2f2f5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .mly-cart-item__price { font-size:13px; color:#888; margin-top:2px; }
+      .mly-cart-item__controls { display:flex; align-items:center; gap:8px; background:#1a1a24; padding:4px; border-radius:999px; }
+      .mly-qty-btn { width:28px; height:28px; border-radius:50%; background:none; border:none; color:#f2f2f5; font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:600; transition:background .2s; }
+      .mly-qty-btn:hover { background:rgba(255,255,255,.1); }
+      .mly-qty-val { font-size:15px; font-weight:800; min-width:20px; text-align:center; color:#fff; }
+      .mly-cart-item__subtotal { font-size:15px; font-weight:800; color:#fff; text-align:right; min-width:60px; }
+      .mly-cart-footer { padding:20px 24px calc(20px + env(safe-area-inset-bottom)); border-top:1px solid rgba(255,255,255,.08); display:flex; flex-direction:column; gap:16px; }
+      .mly-cart-total { display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:600; color:#888; }
+      .mly-cart-total__price { font-size:24px; font-weight:800; color:#fff; }
+      .mly-cart-waiter-btn { width:100%; padding:18px; color:#fff; font-size:17px; font-weight:800; border-radius:16px; border:none; cursor:pointer; transition:transform .2s,opacity .2s; font-family:inherit; }
+      .mly-cart-waiter-btn:hover { opacity:.92; transform:translateY(-2px); }
+      
+      /* Waiter Overlay */
+      .mly-waiter-overlay { position:fixed; inset:0; background:#0f0f13; z-index:9999; display:flex; align-items:center; justify-content:center; padding:24px; animation:mlyFadeIn .3s ease; }
+      .mly-waiter-card { width:100%; max-width:480px; background:#1a1a24; border-radius:24px; padding:32px 24px; box-shadow:0 24px 64px rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.08); }
+      .mly-waiter-header { text-align:center; margin-bottom:20px; }
+      .mly-waiter-badge { display:inline-block; background:rgba(255,255,255,.1); color:#fff; font-size:13px; font-weight:700; padding:6px 16px; border-radius:999px; margin-bottom:12px; }
+      .mly-waiter-restaurant { font-size:26px; font-weight:900; color:#fff; margin:0; }
+      .mly-waiter-divider { height:1px; background:rgba(255,255,255,.08); margin:20px 0; }
+      .mly-waiter-items { display:flex; flex-direction:column; gap:14px; max-height:45dvh; overflow-y:auto; scrollbar-width:none; }
+      .mly-waiter-items::-webkit-scrollbar { display:none; }
+      .mly-waiter-item { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+      .mly-waiter-item__left { display:flex; gap:12px; align-items:flex-start; min-width:0; }
+      .mly-waiter-item__qty { font-size:18px; font-weight:900; color:var(--brand); flex-shrink:0; }
+      .mly-waiter-item__name { font-size:17px; font-weight:600; color:#fff; line-height:1.4; }
+      .mly-waiter-item__price { font-size:18px; font-weight:800; color:#888; flex-shrink:0; text-align:right; }
+      .mly-waiter-total { display:flex; justify-content:space-between; align-items:center; font-size:18px; font-weight:700; color:#888; margin-bottom:32px; }
+      .mly-waiter-total__price { font-size:32px; font-weight:900; color:#fff; }
+      .mly-waiter-done { width:100%; padding:20px; color:#fff; font-size:17px; font-weight:800; border-radius:18px; border:none; cursor:pointer; font-family:inherit; transition:opacity .2s; margin-bottom:12px; }
+      .mly-waiter-done:hover { opacity:.9; }
+      .mly-waiter-clear { width:100%; padding:14px; background:none; border:none; color:#888; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; transition:color .2s; }
+      .mly-waiter-clear:hover { color:#ef4444; }
+
       @keyframes mlyFadeIn { from{opacity:0;} to{opacity:1;} }
       @keyframes mlySheetUp { from{transform:translate(-50%,100%)} to{transform:translate(-50%,0)} }
       @keyframes mlySplashIn { from{opacity:0} to{opacity:1} }

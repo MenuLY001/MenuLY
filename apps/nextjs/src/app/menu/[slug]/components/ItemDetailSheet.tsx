@@ -4,7 +4,7 @@ import type { MenuItem } from './types';
 import { fmt } from './helpers';
 import { VegDot } from './VegDot';
 
-export function ItemDetailSheet({ item, brand, onClose }: { item: MenuItem | null; brand: string; onClose: () => void }) {
+export function ItemDetailSheet({ item, brand, onClose, onAddToCart }: { item: MenuItem | null; brand: string; onClose: () => void; onAddToCart: (item: MenuItem, qty: number) => void; }) {
   const [qty, setQty] = useState(1);
   const [imgError, setImgError] = useState(false);
   const prevItemId = useRef<string | undefined>(undefined);
@@ -74,7 +74,7 @@ export function ItemDetailSheet({ item, brand, onClose }: { item: MenuItem | nul
             </div>
           </div>
           {item.is_available
-            ? <button className="mly-sheet__order-btn" style={{ background: brand, boxShadow: `0 0 28px ${brand}55,0 6px 20px rgba(0,0,0,.35)` }}>
+            ? <button className="mly-sheet__order-btn" style={{ background: brand, boxShadow: `0 0 28px ${brand}55,0 6px 20px rgba(0,0,0,.35)` }} onClick={() => onAddToCart(item, qty)}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
                   <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />

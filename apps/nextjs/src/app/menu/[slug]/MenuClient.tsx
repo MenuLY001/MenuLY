@@ -4,8 +4,10 @@ import type { MenuItem, Props } from './components/types';
 import { SplashScreen } from './components/SplashScreen';
 import { ItemDetailSheet } from './components/ItemDetailSheet';
 import { SpecialCard, ItemRow } from './components/ItemCards';
+import { CartSheet } from './components/CartSheet';
 import { MenuStyles } from './components/MenuStyles';
-import { Search, Phone, MapPin, X, Menu as MenuIcon } from 'lucide-react';
+import { Search, Phone, MapPin, X, Menu as MenuIcon, ShoppingBag } from 'lucide-react';
+import type { CartItem } from './components/types';
 
 export function MenuClient({ restaurant, categories, items }: Props) {
   const brand = restaurant.theme_color ?? '#e67e22';
@@ -16,6 +18,25 @@ export function MenuClient({ restaurant, categories, items }: Props) {
   const [activeFilter, setActiveFilter] = useState<'all' | 'veg'>('all');
   const [detailItem, setDetailItem] = useState<MenuItem | null>(null);
   const [menuSheetOpen, setMenuSheetOpen] = useState(false);
+  const [cartSheetOpen, setCartSheetOpen] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
+
+  const addToCart = useCallback((item: MenuItem, qty: number) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.id === item.id);
+      if (existing) return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + qty } : i);
+      return [...prev, { ...item, qty }];
+    });
+    setDetailItem(null);
+  }, []);
+
+  const updateCartQty = useCallback((id: string, delta: number) => {
+    setCart(prev => prev.map(i => i.id === id ? { ...i, qty: i.qty + delta } : i).filter(i => i.qty > 0));
+  }, []);
+
+  const clearCart = useCallback(() => setCart([]), []);
+  const cartTotalQty = cart.reduce((acc, item) => acc + item.qty, 0);
+  const cartTotalPrice = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
 
 
 
@@ -188,12 +209,31 @@ export function MenuClient({ restaurant, categories, items }: Props) {
           </footer>
         </div>
 
-        {/* Floating Menu Button */}
-        {!searchQuery && (
-          <button className="mly-fab" style={{ background: brand, boxShadow: `0 8px 24px ${brand}66` }} onClick={() => setMenuSheetOpen(true)}>
-            <MenuIcon size={20} />
-            <span>Menu</span>
-          </button>
+        {/* FABs */}
+        {!cartSheetOpen && !detailItem && (
+          <div style={{ position: 'fixed', bottom: 24, left: 0, right: 0, pointerEvents: 'none', zIndex: 900, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '0 24px' }}>
+            
+            <button className="mly-fab" style={{ position: 'relative', bottom: 'auto', left: 'auto', transform: 'none', background: cartTotalQty > 0 ? '#1a1a24' : brand, boxShadow: cartTotalQty > 0 ? '0 8px 32px rgba(0,0,0,.5)' : `0 8px 24px ${brand}66`, pointerEvents: 'auto', border: cartTotalQty > 0 ? '1px solid rgba(255,255,255,.1)' : 'none' }} onClick={() => setMenuSheetOpen(true)}>
+              <MenuIcon size={20} />
+              <span>Menu</span>
+            </button>
+
+            {cartTotalQty > 0 && (
+              <button 
+                style={{ background: brand, width: '100%', maxWidth: 400, borderRadius: 16, border: 'none', padding: '16px 20px', color: '#fff', fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'space-between', pointerEvents: 'auto', boxShadow: `0 12px 40px ${brand}66`, cursor: 'pointer', transition: 'transform 0.2s' }}
+                onClick={() => setCartSheetOpen(true)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <ShoppingBag size={20} />
+                  <span>{cartTotalQty} item{cartTotalQty !== 1 ? 's' : ''}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span>View Order</span>
+                  <span style={{ opacity: 0.9 }}>{fmt(cartTotalPrice)}</span>
+                </div>
+              </button>
+            )}
+          </div>
         )}
 
         {/* Categories Bottom Sheet */}
@@ -227,7 +267,18 @@ export function MenuClient({ restaurant, categories, items }: Props) {
           </>
         )}
 
-        <ItemDetailSheet item={detailItem} brand={brand} onClose={closeDetail} />
+        {detailItem && <ItemDetailSheet item={detailItem} brand={brand} onClose={closeDetail} onAddToCart={addToCart} />}
+        
+        {cartSheetOpen && (
+          <CartSheet 
+            cart={cart} 
+            brand={brand} 
+            restaurant={restaurant} 
+            onClose={() => setCartSheetOpen(false)} 
+            onUpdateQty={updateCartQty} 
+            onClear={clearCart} 
+          />
+        )}
       </div>
 
       <MenuStyles />
