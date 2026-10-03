@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { type Category, type MenuItem } from './types';
 import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, EmptyState, Modal, apiFetch } from './shared';
+import { Pencil, Trash2 } from 'lucide-react';
 
 const EMPTY_FORM = { category_id: '', name: '', description: '', price: '', image_url: '', is_available: true, is_veg: true, is_special: false };
 
@@ -117,19 +118,25 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
                 : <div className="item-row__img" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🍽️</div>
               }
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="item-row__name">{item.name}</div>
+                <div className="item-row__name" style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ width: 12, height: 12, borderRadius: 2, border: `1.5px solid ${item.is_veg ? '#22c55e' : '#ef4444'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 8, flexShrink: 0 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: item.is_veg ? '#22c55e' : '#ef4444' }} />
+                  </div>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
+                </div>
                 <div className="item-row__meta">{catName(item.category_id)}</div>
               </div>
               <span className="item-row__price">₹{item.price}</span>
-              <button
-                onClick={() => toggleAvail(item)}
-                className={item.is_available ? 'item-row__avail item-row__avail--yes' : 'item-row__avail item-row__avail--no'}
-              >
-                {item.is_available ? 'Available' : 'Unavailable'}
-              </button>
+              <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexShrink: 0, paddingRight: 8 }} title={item.is_available ? 'Available' : 'Unavailable'}>
+                <div style={{ position: 'relative' }}>
+                  <input type="checkbox" style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} checked={item.is_available} onChange={() => toggleAvail(item)} />
+                  <div style={{ width: 36, height: 20, backgroundColor: item.is_available ? '#22c55e' : '#d1d5db', borderRadius: 20, transition: 'background-color 0.2s ease' }} />
+                  <div style={{ position: 'absolute', top: 2, left: item.is_available ? 18 : 2, width: 16, height: 16, backgroundColor: '#fff', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                </div>
+              </label>
               <div className="item-row__actions">
-                <button onClick={() => openEdit(item)} className="btn-ghost">Edit</button>
-                <button onClick={() => del(item)} className="btn-danger-ghost">Delete</button>
+                <button onClick={() => openEdit(item)} className="btn-ghost" title="Edit" style={{ padding: '8px 10px', color: '#6b7280' }}><Pencil size={16} /></button>
+                <button onClick={() => del(item)} className="btn-danger-ghost" title="Delete" style={{ padding: '8px 10px', background: 'transparent' }}><Trash2 size={16} /></button>
               </div>
             </div>
           ))}

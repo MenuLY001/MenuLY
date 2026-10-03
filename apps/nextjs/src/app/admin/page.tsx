@@ -10,6 +10,7 @@ import { ItemsPanel } from './components/ItemsPanel';
 import { SettingsPanel } from './components/SettingsPanel';
 import { BillingPanel } from './components/BillingPanel';
 import { SignInScreen } from './components/SignInScreen';
+import { LayoutDashboard, List, Settings, CreditCard, ExternalLink, LogOut } from 'lucide-react';
 
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
@@ -73,9 +74,8 @@ export default function AdminPage() {
         })}
       </div>
 
-      {/* ── Sidebar ────────────────────────────────────── */}
-      {mobileNavOpen && <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.4)', zIndex: 40 }} onClick={() => setMobileNavOpen(false)} />}
-      <aside className={`admin-sidebar ${mobileNavOpen ? 'admin-sidebar--open' : ''}`} style={{ width: 240, background: '#fff', borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', padding: 24, position: 'fixed', top: 0, bottom: 0, zIndex: 50 }}>
+      {/* ── Sidebar (Desktop only) ────────────────────────────────────── */}
+      <aside className="admin-sidebar" style={{ width: 240, background: '#fff', borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', padding: 24, position: 'fixed', top: 0, bottom: 0, zIndex: 50 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40 }}>
           <div style={{ width: 32, height: 32, borderRadius: 8, background: '#1a1a2e', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>M</div>
           <span style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e' }}>Menuly</span>
@@ -83,31 +83,27 @@ export default function AdminPage() {
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
           {[
-            { id: 'categories', label: 'Categories', icon: '📋' },
-            { id: 'items', label: 'Menu Items', icon: '🍽️' },
-            { id: 'settings', label: 'Settings & QR', icon: '⚙️' },
-            { id: 'billing', label: 'Billing', icon: '💳' },
+            { id: 'categories', label: 'Categories', icon: <LayoutDashboard size={18} /> },
+            { id: 'items', label: 'Menu Items', icon: <List size={18} /> },
+            { id: 'settings', label: 'Settings & QR', icon: <Settings size={18} /> },
+            { id: 'billing', label: 'Billing', icon: <CreditCard size={18} /> },
           ].map(t => (
             <button
               key={t.id}
-              onClick={() => { setTab(t.id as Tab); setMobileNavOpen(false); }}
+              onClick={() => setTab(t.id as Tab)}
               style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, border: 'none', background: tab === t.id ? '#f0f2f8' : 'transparent', color: tab === t.id ? '#1a1a2e' : '#6b7280', fontSize: 14, fontWeight: tab === t.id ? 700 : 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'background .15s' }}
             >
-              <span>{t.icon}</span> {t.label}
+              <div style={{ color: tab === t.id ? '#1a1a2e' : '#9ca3af' }}>{t.icon}</div>
+              {t.label}
             </button>
           ))}
         </nav>
-
-        {/* View Menu link */}
-        <a href={`/menu/${restaurant?.slug ?? ''}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 600, color: '#6b7280', textDecoration: 'none', transition: 'background .15s', marginTop: 4 }}>
-          <span>🔗</span> View Menu
-        </a>
 
         {/* Sign out */}
         <button onClick={() => supabase.auth.signOut()} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 600, color: '#9ca3af', fontFamily: 'inherit', border: 'none', cursor: 'pointer', background: 'transparent', transition: 'color .15s, background .15s', marginTop: 4 }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#dc2626'; (e.currentTarget as HTMLElement).style.background = '#fef2f2'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#9ca3af'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
-          <span>↩</span> Sign Out
+          <LogOut size={16} /> Sign Out
         </button>
 
         {/* Powered by */}
@@ -122,22 +118,50 @@ export default function AdminPage() {
       </aside>
 
       {/* ── Main ───────────────────────────────────────── */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', marginLeft: 240 }} className="admin-main">
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }} className="admin-main">
+        {/* Desktop Header for View Menu */}
+        <header className="admin-desktop-header" style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 32px', borderBottom: '1px solid transparent' }}>
+           <a href={`/menu/${restaurant?.slug ?? ''}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 999, fontSize: 13, fontWeight: 700, background: '#1a1a2e', color: '#fff', textDecoration: 'none', transition: 'opacity .15s' }}>
+            View my menu <ExternalLink size={14} />
+          </a>
+        </header>
+
         {/* Mobile header */}
         <header style={{ display: 'none', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#fff', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, zIndex: 10 }} className="admin-mobile-header">
-          <button onClick={() => setMobileNavOpen(true)} style={{ fontSize: 20, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: '#f0f2f8', border: 'none', cursor: 'pointer' }}>☰</button>
-          <span style={{ fontSize: 16, fontWeight: 700, color: '#1a1a2e' }}>{restaurant?.name ?? 'Admin'}</span>
-          <div style={{ width: 36 }} />
+          <span style={{ fontSize: 16, fontWeight: 800, color: '#1a1a2e' }}>Menuly</span>
+          <a href={`/menu/${restaurant?.slug ?? ''}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, background: '#1a1a2e', color: '#fff', textDecoration: 'none' }}>
+            View <ExternalLink size={12} />
+          </a>
         </header>
 
         {/* Content */}
-        <div style={{ flex: 1, padding: 32, maxWidth: 900 }}>
+        <div style={{ flex: 1, padding: '24px 32px 100px', maxWidth: 1200, margin: '0 auto', width: '100%' }} className="admin-content">
           {tab === 'categories' && <CategoriesPanel token={token} toast={toastObj} />}
           {tab === 'items'      && <ItemsPanel      token={token} toast={toastObj} />}
           {tab === 'settings'   && <SettingsPanel   token={token} toast={toastObj} onRestaurantUpdate={setRestaurant} />}
           {tab === 'billing'    && <BillingPanel    token={token} toast={toastObj} />}
         </div>
       </div>
+
+      <nav className="mobile-bottom-nav" style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #e5e7eb', zIndex: 50, paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: 60 }}>
+          {[
+            { id: 'categories', label: 'Cats', icon: <LayoutDashboard size={20} /> },
+            { id: 'items', label: 'Items', icon: <List size={20} /> },
+            { id: 'settings', label: 'Settings', icon: <Settings size={20} /> },
+            { id: 'billing', label: 'Billing', icon: <CreditCard size={20} /> },
+          ].map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id as Tab)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1, background: 'transparent', border: 'none', color: tab === t.id ? '#1a1a2e' : '#9ca3af', transition: 'color .15s' }}
+            >
+              {t.icon}
+              <span style={{ fontSize: 10, fontWeight: 600 }}>{t.label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
 
       <style>{`
         @keyframes admin-spin  { to { transform: rotate(360deg); } }
@@ -160,10 +184,7 @@ export default function AdminPage() {
         .item-row__actions     { display: flex; gap: 8px; flex-shrink: 0; }
         .item-row__img         { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #f0f2f8; flex-shrink: 0; }
         .item-row__meta        { font-size: 12px; color: #9ca3af; }
-        .item-row__price       { font-size: 14px; font-weight: 800; color: var(--brand, #e67e22); flex-shrink: 0; }
-        .item-row__avail       { padding: 4px 10px; border-radius: 9999px; border: none; font-weight: 600; font-size: 12px; cursor: pointer; font-family: inherit; flex-shrink: 0; }
-        .item-row__avail--yes  { background: #dcfce7; color: #16a34a; }
-        .item-row__avail--no   { background: #fee2e2; color: #dc2626; }
+        .item-row__price       { font-size: 14px; font-weight: 800; color: #6b7280; flex-shrink: 0; } /* Neutral price color */
 
         .items-filter          { display: flex; gap: 8px; flex-wrap: wrap; }
         .filter-pill           { padding: 6px 14px; border-radius: 9999px; background: #f0f2f8; border: 1.5px solid #e5e7eb; font-size: 13px; font-weight: 600; color: #5f6380; font-family: inherit; cursor: pointer; transition: all .15s; }
@@ -180,13 +201,17 @@ export default function AdminPage() {
         .field__row            { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .settings-layout       { display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: start; }
+        
+        .admin-main            { margin-left: 240px; }
 
         @media (max-width: 768px) {
-          .admin-sidebar       { transform: translateX(-100%); transition: transform .25s ease; box-shadow: 4px 0 32px rgba(0,0,0,.15); }
-          .admin-sidebar--open { transform: translateX(0); }
-          .admin-main          { margin-left: 0 !important; }
+          .admin-sidebar       { display: none !important; }
+          .admin-desktop-header{ display: none !important; }
           .admin-mobile-header { display: flex !important; }
+          .mobile-bottom-nav   { display: block !important; }
+          .admin-main          { margin-left: 0 !important; }
           .settings-layout     { grid-template-columns: 1fr; }
+          .admin-content       { padding: 16px 16px 100px !important; }
         }
       `}</style>
     </div>

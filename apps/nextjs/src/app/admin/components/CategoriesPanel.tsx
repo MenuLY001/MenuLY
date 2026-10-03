@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { type Category } from './types';
 import { useToast, inp, btnP, btnG, lbl, Spinner, EmptyState, Modal, apiFetch } from './shared';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export function CategoriesPanel({ token, toast }: { token: string; toast: ReturnType<typeof useToast> }) {
   const [cats, setCats] = useState<Category[]>([]);
@@ -83,8 +84,8 @@ export function CategoriesPanel({ token, toast }: { token: string; toast: Return
                 </div>
                 <span className="item-row__name">{c.name}</span>
                 <div className="item-row__actions">
-                  <button onClick={() => openEdit(c)} className="btn-ghost">Edit</button>
-                  <button onClick={() => del(c)} className="btn-danger-ghost">Delete</button>
+                  <button onClick={() => openEdit(c)} className="btn-ghost" title="Edit" style={{ padding: '8px 10px', color: '#6b7280' }}><Pencil size={16} /></button>
+                  <button onClick={() => del(c)} className="btn-danger-ghost" title="Delete" style={{ padding: '8px 10px', background: 'transparent' }}><Trash2 size={16} /></button>
                 </div>
               </div>
             );

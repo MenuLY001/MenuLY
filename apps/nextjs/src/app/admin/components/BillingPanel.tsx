@@ -122,7 +122,7 @@ export function BillingPanel({ token, toast }: { token: string; toast: ReturnTyp
               </button>
             )}
             {hasActiveSub && !cancelPending && (
-              <button onClick={() => setShowCancel(true)} disabled={actionLoading} style={{ background: 'transparent', border: '1.5px solid #e5e7eb', color: '#6b7280', padding: '11px 20px', borderRadius: 10, fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel subscription</button>
+              <button onClick={() => setShowCancel(true)} disabled={actionLoading} style={{ background: 'transparent', border: 'none', color: '#9ca3af', textDecoration: 'underline', padding: '8px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', alignSelf: 'center', marginTop: 8 }}>Cancel subscription</button>
             )}
           </div>
         </div>
