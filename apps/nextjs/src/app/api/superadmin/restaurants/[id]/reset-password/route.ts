@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getSuperAdminContext } from '@/lib/auth';
+import { logAudit } from '@/lib/audit';
 
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   try {
-    await getSuperAdminContext(req);
+    const user = await getSuperAdminContext(req);
 
     const params = await props.params;
     const { id } = params;
@@ -34,6 +35,14 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
+
+    await logAudit({
+      actorId: user.userId,
+      action: 'restaurant.reset_password',
+      targetId: id,
+      targetType: 'restaurant',
+      metadata: { targetUserId: adminLink.user_id }
+    });
 
     return NextResponse.json({ message: 'Password updated successfully' });
   } catch (err) {

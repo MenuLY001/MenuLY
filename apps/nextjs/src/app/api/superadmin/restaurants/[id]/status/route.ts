@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSuperAdminContext } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { logAudit } from '@/lib/audit';
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await getSuperAdminContext(req);
+    const user = await getSuperAdminContext(req);
     const { id } = await params;
     const { status } = await req.json() as { status?: string };
 
@@ -17,6 +18,15 @@ export async function PATCH(
     }
 
     await supabaseAdmin.from('restaurants').update({ status }).eq('id', id);
+    
+    await logAudit({
+      actorId: user.userId,
+      action: `restaurant.status.${status}`,
+      targetId: id,
+      targetType: 'restaurant',
+      metadata: { newStatus: status }
+    });
+
     return NextResponse.json({ success: true });
   } catch (e) {
     if (e instanceof Response) return e;

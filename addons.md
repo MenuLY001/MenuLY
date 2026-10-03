@@ -1,7 +1,6 @@
 # Addons & Future Features
 
 ## Superadmin Features
-- Audit log of who suspended, extended, or changed what, and when.
 - Plans and pricing management, so you can change prices or create offers (e.g. yearly discount) without code changes.
 - Invoices / receipts (PDF) and payment reminders before the trial or subscription ends.
 - Coupon / referral codes, which are useful when selling to hotels by relationship.

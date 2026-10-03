@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSuperAdminContext } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { logAudit } from '@/lib/audit';
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await getSuperAdminContext(req);
+    const user = await getSuperAdminContext(req);
     const { id } = await params;
     const { days } = await req.json() as { days?: number };
 
@@ -28,6 +29,14 @@ export async function PATCH(
       trial_ends_at: base.toISOString(),
       status: 'trialing',
     }).eq('id', id);
+
+    await logAudit({
+      actorId: user.userId,
+      action: 'restaurant.extend_trial',
+      targetId: id,
+      targetType: 'restaurant',
+      metadata: { addedDays: days, newEndsAt: base.toISOString() }
+    });
 
     return NextResponse.json({ success: true, trial_ends_at: base.toISOString() });
   } catch (e) {

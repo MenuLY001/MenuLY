@@ -8,6 +8,7 @@ import { StatCards } from './components/StatCards';
 import { RestaurantTable } from './components/RestaurantTable';
 import { ManageModal, SuspendModal, AddRestaurantModal } from './components/Modals';
 import { RevenueTab } from './components/RevenueTab';
+import { AuditTab } from './components/AuditTab';
 
 import { Shield, RefreshCw, Search, Download, Plus } from 'lucide-react';
 
@@ -16,7 +17,7 @@ const inp: React.CSSProperties = { width: '100%', padding: '10px 14px', borderRa
 const btn: React.CSSProperties = { width: '100%', padding: '11px 0', background: '#e67e22', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' };
 
 export default function SuperAdminPage() {
-  const [activeTab, setActiveTab] = useState<'restaurants' | 'revenue'>('restaurants');
+  const [activeTab, setActiveTab] = useState<'restaurants' | 'revenue' | 'audit'>('restaurants');
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -200,6 +201,7 @@ export default function SuperAdminPage() {
       <div style={{ padding: '0 24px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', gap: 24 }}>
         <div style={{ padding: '16px 0', color: activeTab === 'restaurants' ? '#a5b4fc' : 'rgba(255,255,255,.5)', borderBottom: activeTab === 'restaurants' ? '2px solid #a5b4fc' : 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }} onClick={() => setActiveTab('restaurants')}>Restaurants</div>
         <div style={{ padding: '16px 0', color: activeTab === 'revenue' ? '#a5b4fc' : 'rgba(255,255,255,.5)', borderBottom: activeTab === 'revenue' ? '2px solid #a5b4fc' : 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }} onClick={() => setActiveTab('revenue')}>Revenue & Analytics</div>
+        <div style={{ padding: '16px 0', color: activeTab === 'audit' ? '#a5b4fc' : 'rgba(255,255,255,.5)', borderBottom: activeTab === 'audit' ? '2px solid #a5b4fc' : 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }} onClick={() => setActiveTab('audit')}>Audit Log</div>
       </div>
 
       <div style={{ display: activeTab === 'restaurants' ? 'block' : 'none' }}>
@@ -262,6 +264,7 @@ export default function SuperAdminPage() {
       </div>
 
       <RevenueTab token={token} isActive={activeTab === 'revenue'} />
+      <AuditTab token={token} isActive={activeTab === 'audit'} />
 
       <style>{`
         @keyframes saFadeIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }

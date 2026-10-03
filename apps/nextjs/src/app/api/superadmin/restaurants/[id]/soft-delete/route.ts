@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getSuperAdminContext } from '@/lib/auth';
+import { logAudit } from '@/lib/audit';
 
 export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   try {
-    await getSuperAdminContext(req);
+    const user = await getSuperAdminContext(req);
 
     const params = await props.params;
     const { id } = params;
@@ -17,6 +18,14 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         .eq('id', id);
         
       if (error) throw error;
+      
+      await logAudit({
+        actorId: user.userId,
+        action: 'restaurant.soft_delete',
+        targetId: id,
+        targetType: 'restaurant'
+      });
+
       return NextResponse.json({ success: true });
     }
     
@@ -27,6 +36,14 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         .eq('id', id);
         
       if (error) throw error;
+
+      await logAudit({
+        actorId: user.userId,
+        action: 'restaurant.restore',
+        targetId: id,
+        targetType: 'restaurant'
+      });
+
       return NextResponse.json({ success: true });
     }
 
