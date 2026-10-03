@@ -1,5 +1,6 @@
 'use client';
 import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase-client';
 import type { DashboardData, FilterState, RestaurantRow, ToastType, Toast } from './components/types';
 import { downloadCSV } from './components/helpers';
@@ -15,6 +16,7 @@ const inp: React.CSSProperties = { width: '100%', padding: '10px 14px', borderRa
 const btn: React.CSSProperties = { width: '100%', padding: '11px 0', background: '#e67e22', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' };
 
 export default function SuperAdminPage() {
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -147,6 +149,12 @@ export default function SuperAdminPage() {
             <RefreshCw size={14} className={loading ? 'spin' : ''} /> Refresh
           </button>
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ padding: '0 24px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', gap: 24 }}>
+        <div style={{ padding: '16px 0', color: '#a5b4fc', borderBottom: '2px solid #a5b4fc', fontSize: 14, fontWeight: 600, cursor: 'default' }}>Restaurants</div>
+        <div style={{ padding: '16px 0', color: 'rgba(255,255,255,.5)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }} onClick={() => router.push('/superadmin/revenue')}>Revenue & Analytics</div>
       </div>
 
       {/* Stat Cards */}
