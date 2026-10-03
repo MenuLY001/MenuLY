@@ -79,7 +79,7 @@ export function AddRestaurantModal({ onClose, onDone, onError }: { onClose: () =
             <label style={lbl}>Initial Password</label>
             <div style={{ position: 'relative' }}>
               <Lock size={16} color="rgba(255,255,255,.3)" style={{ position: 'absolute', left: 12, top: 12 }} />
-              <input type="text" style={{ ...inp, paddingLeft: 38 }} placeholder="Must be at least 8 chars" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} />
+              <input type="password" style={{ ...inp, paddingLeft: 38 }} placeholder="Must be at least 8 chars" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} />
             </div>
           </div>
           

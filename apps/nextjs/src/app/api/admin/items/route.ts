@@ -22,8 +22,12 @@ export async function POST(req: NextRequest) {
   try {
     const { restaurantId } = await getAdminContext(req);
     const body = await req.json();
+    // Allowlist to prevent arbitrary field injection
+    const ALLOWED = ['name', 'description', 'price', 'category_id', 'image_url', 'is_available', 'is_veg', 'is_special', 'is_todays_special', 'sort_order'] as const;
+    const payload: Record<string, unknown> = { restaurant_id: restaurantId };
+    for (const key of ALLOWED) { if (key in body) payload[key] = body[key]; }
     const { data, error } = await supabaseAdmin
-      .from('menu_items').insert({ ...body, restaurant_id: restaurantId }).select().single();
+      .from('menu_items').insert(payload).select().single();
     if (error) throw error;
     return NextResponse.json(data, { status: 201 });
   } catch (e) {

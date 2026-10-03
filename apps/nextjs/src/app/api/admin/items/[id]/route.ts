@@ -8,8 +8,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { restaurantId } = await getAdminContext(req);
     const { id } = await params;
     const body = await req.json();
+    // Allowlist to prevent arbitrary field injection
+    const ALLOWED = ['name', 'description', 'price', 'category_id', 'image_url', 'is_available', 'is_veg', 'is_special', 'is_todays_special', 'sort_order'] as const;
+    const update: Record<string, unknown> = {};
+    for (const key of ALLOWED) { if (key in body) update[key] = body[key]; }
     const { data, error } = await supabaseAdmin
-      .from('menu_items').update(body).eq('id', id).eq('restaurant_id', restaurantId).select().single();
+      .from('menu_items').update(update).eq('id', id).eq('restaurant_id', restaurantId).select().single();
     if (error) throw error;
     return NextResponse.json(data);
   } catch (e) {

@@ -8,14 +8,8 @@ export function useRestaurant(token: string | undefined) {
     queryKey: ['restaurant'],
     queryFn: async () => {
       if (!token) return null;
-      let r = await apiFetch(token, '/api/admin/restaurant');
-      if (!r || r.id === undefined) {
-        r = await apiFetch(token, '/api/admin/restaurant', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: 'My Restaurant' }),
-        });
-      }
+      const r = await apiFetch(token, '/api/admin/restaurant');
+      if (!r || r.id === undefined) return null;
       return r as Restaurant;
     },
     enabled: !!token,

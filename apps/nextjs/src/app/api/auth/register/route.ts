@@ -74,9 +74,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Link user to restaurant
-    await supabaseAdmin.from('restaurant_admins').insert({
+    const { error: linkError } = await supabaseAdmin.from('restaurant_admins').insert({
       user_id: userId, restaurant_id: restaurant.id,
     });
+
+    if (linkError) {
+      // Full rollback: remove restaurant and auth user to prevent orphaned records
+      await supabaseAdmin.from('restaurants').delete().eq('id', restaurant.id);
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      return NextResponse.json({ error: 'Failed to link account. Please try again.' }, { status: 500 });
+    }
 
     return NextResponse.json({
       message: 'Account created successfully.',

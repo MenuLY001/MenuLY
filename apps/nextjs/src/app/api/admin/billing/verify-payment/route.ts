@@ -38,6 +38,8 @@ export async function POST(req: NextRequest) {
       restaurant_id: restaurantId,
       razorpay_payment_id,
       razorpay_subscription_id,
+      // amount_paise is set to 0 here as a placeholder — the real amount will be
+      // upserted by the webhook (payment.captured event) which has the full entity data.
       amount_paise: 0,
       currency: 'INR',
       status: 'captured',

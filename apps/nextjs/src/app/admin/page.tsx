@@ -12,9 +12,54 @@ import { ItemsPanel } from './components/ItemsPanel';
 import { SettingsPanel } from './components/SettingsPanel';
 import { BillingPanel } from './components/BillingPanel';
 import { SignInScreen } from './components/SignInScreen';
-import { LayoutDashboard, List, Settings, CreditCard, ExternalLink, LogOut, Home } from 'lucide-react';
+import { LayoutDashboard, List, Settings, CreditCard, ExternalLink, LogOut, Home, X as XIcon } from 'lucide-react';
 import { useRestaurant } from './components/hooks';
 import { useQueryClient } from '@tanstack/react-query';
+
+// ── Announcement Banner ────────────────────────────────────────────────────────
+const A_TYPE_STYLES = {
+  info:    { bg: '#eff6ff', border: '#bfdbfe', color: '#1e40af', icon: 'ℹ️' },
+  warning: { bg: '#fffbeb', border: '#fcd34d', color: '#92400e', icon: '⚠️' },
+  success: { bg: '#f0fdf4', border: '#bbf7d0', color: '#166534', icon: '✅' },
+  error:   { bg: '#fef2f2', border: '#fca5a5', color: '#991b1b', icon: '🚨' },
+};
+
+function AnnouncementsBanner({ token }: { token: string }) {
+  const [announcements, setAnnouncements] = useState<Array<{ id: string; title: string; message: string; type: string }>>([]);
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!token) return;
+    fetch('/api/admin/announcements', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(d => { if (Array.isArray(d)) setAnnouncements(d); })
+      .catch(() => {});
+  }, [token]);
+
+  const visible = announcements.filter(a => !dismissed.has(a.id));
+  if (!visible.length) return null;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+      {visible.map(a => {
+        const style = A_TYPE_STYLES[a.type as keyof typeof A_TYPE_STYLES] ?? A_TYPE_STYLES.info;
+        return (
+          <div key={a.id} style={{ background: style.bg, border: `1px solid ${style.border}`, borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>{style.icon}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: style.color }}>{a.title}</div>
+              <div style={{ fontSize: 13, color: style.color, opacity: 0.85, marginTop: 2 }}>{a.message}</div>
+            </div>
+            <button onClick={() => setDismissed(s => new Set([...s, a.id]))}
+              style={{ background: 'none', border: 'none', color: style.color, opacity: 0.5, cursor: 'pointer', padding: 4, display: 'flex', flexShrink: 0 }}>
+              <XIcon size={16} />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
@@ -139,6 +184,7 @@ export default function AdminPage() {
         {/* Content */}
         <div style={{ flex: 1, padding: '24px 32px 100px', maxWidth: 1200, margin: '0 auto', width: '100%' }} className="admin-content">
           <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+          <AnnouncementsBanner token={token!} />
           {tab === 'dashboard'  && <DashboardPanel  token={token!} rest={restaurant ?? null} onNavigate={(t) => setTab(t as Tab)} />}
           {tab === 'categories' && <CategoriesPanel token={token!} toast={toastObj} />}
           {tab === 'items'      && <ItemsPanel      token={token!} toast={toastObj} />}
