@@ -18,8 +18,16 @@ async function main() {
   console.log('Subscriptions:', JSON.stringify(subs, null, 2));
   console.log('Restaurants:', JSON.stringify(rests, null, 2));
   console.log('Payments:', JSON.stringify(pays, null, 2));
-  if (itemsErr) console.error('Menu Items Error:', itemsErr);
-  else console.log('Menu Items count:', items?.length);
+  const { data: cols, error: colsErr } = await supabase.rpc('get_menu_items_columns');
+  
+  if (colsErr) {
+    console.error('RPC Error:', colsErr);
+    // fallback, just get a single item to see its keys
+    const { data: oneItem } = await supabase.from('menu_items').select('*').limit(1).single();
+    console.log('Columns from one item:', Object.keys(oneItem || {}));
+  } else {
+    console.log('Columns:', cols);
+  }
 }
 
 main();
