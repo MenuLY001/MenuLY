@@ -31,7 +31,7 @@ const BRAND = '#e67e22';
 const inp: React.CSSProperties  = { width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', background: '#f9fafb', color: '#1a1a2e' };
 const btnP: React.CSSProperties = { padding: '10px 18px', background: BRAND, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' };
 const btnG: React.CSSProperties = { padding: '8px 14px', background: '#f0f2f8', color: '#374151', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' };
-const btnD: React.CSSProperties = { padding: '8px 14px', background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' };
+
 const lbl: React.CSSProperties  = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 };
 const fmtDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 const daysLeft = (iso: string) => Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000));
@@ -123,21 +123,29 @@ function CategoriesPanel({ token, toast }: { token: string; toast: ReturnType<ty
         <div><h1 className="panel__title">Categories</h1><p className="panel__subtitle">{cats.length} categories</p></div>
         <button onClick={openCreate} style={btnP}>+ New Category</button>
       </div>
-      {loading ? <Spinner /> : cats.length === 0 ? <EmptyState icon="📋" text="No categories yet. Create your first one!" /> : (
+      {loading ? (
+        <Spinner />
+      ) : cats.length === 0 ? (
+        <EmptyState icon="📋" text="No categories yet. Create your first one!" />
+      ) : (
         <div className="item-list">
-          {cats.map((c, i) => (
-            <div key={c.id} className="item-row">
-              <div className="item-row__sort">
-                <button onClick={() => move(c.id, 'up')} disabled={i === 0} className="sort-btn">↑</button>
-                <button onClick={() => move(c.id, 'down')} disabled={i === cats.length - 1} className="sort-btn">↓</button>
+          {cats.map((c, i) => {
+            const isFirst = i === 0;
+            const isLast = i === cats.length - 1;
+            return (
+              <div key={c.id} className="item-row">
+                <div className="item-row__sort">
+                  <button onClick={() => move(c.id, 'up')} disabled={isFirst} className="sort-btn">↑</button>
+                  <button onClick={() => move(c.id, 'down')} disabled={isLast} className="sort-btn">↓</button>
+                </div>
+                <span className="item-row__name">{c.name}</span>
+                <div className="item-row__actions">
+                  <button onClick={() => openEdit(c)} className="btn-ghost">Edit</button>
+                  <button onClick={() => del(c)} className="btn-danger-ghost">Delete</button>
+                </div>
               </div>
-              <span className="item-row__name">{c.name}</span>
-              <div className="item-row__actions">
-                <button onClick={() => openEdit(c)} className="btn-ghost">Edit</button>
-                <button onClick={() => del(c)} className="btn-danger-ghost">Delete</button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
       {modal && (
@@ -253,7 +261,9 @@ function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<typeof 
         </div>
       )}
 
-      {loading ? <Spinner /> : filtered.length === 0 ? (
+      {loading ? (
+        <Spinner />
+      ) : filtered.length === 0 ? (
         <EmptyState icon="🍽️" text={filterCat === 'all' ? 'No items yet.' : 'No items in this category.'} />
       ) : (
         <div className="item-list">
@@ -269,7 +279,10 @@ function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<typeof 
                 <div className="item-row__meta">{catName(item.category_id)}</div>
               </div>
               <span className="item-row__price">₹{item.price}</span>
-              <button onClick={() => toggleAvail(item)} className={`item-row__avail ${item.is_available ? 'item-row__avail--yes' : 'item-row__avail--no'}`}>
+              <button
+                onClick={() => toggleAvail(item)}
+                className={item.is_available ? 'item-row__avail item-row__avail--yes' : 'item-row__avail item-row__avail--no'}
+              >
                 {item.is_available ? 'Available' : 'Unavailable'}
               </button>
               <div className="item-row__actions">
@@ -356,9 +369,17 @@ function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: string; to
       setMenuTemplate((r.menu_template as 'classic' | 'menuly-dark') ?? 'classic');
       const menuUrl = `${window.location.origin}/menu/${r.slug}`;
       setQrMenuUrl(menuUrl);
-      const { default: QRCode } = await import('qrcode');
-      const dataUrl = await QRCode.toDataURL(menuUrl, { width: 512, margin: 2, errorCorrectionLevel: 'H' });
-      setQrDataUrl(dataUrl);
+      try {
+        // qrcode is a CJS module — the module itself IS the API (no .default)
+        const QRCodeMod = await import('qrcode');
+        const QRCode = (QRCodeMod as unknown as { toDataURL: typeof import('qrcode').toDataURL }).toDataURL
+          ?? (QRCodeMod.default as unknown as { toDataURL: typeof import('qrcode').toDataURL })?.toDataURL
+          ?? (QRCodeMod as unknown as typeof import('qrcode')).toDataURL;
+        const dataUrl = await QRCode(menuUrl, { width: 512, margin: 2, errorCorrectionLevel: 'H' });
+        setQrDataUrl(dataUrl);
+      } catch (err) {
+        console.error('QR generation failed:', err);
+      }
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [token]);
