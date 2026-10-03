@@ -8,5 +8,6 @@ export interface Restaurant {
   id: string; name: string; slug: string; theme_color: string | null;
   logo_url: string | null; menu_template: string | null;
   status: string; trial_ends_at: string | null;
+  phone?: string; address?: string;
 }
 export interface Props { restaurant: Restaurant; categories: Category[]; items: MenuItem[]; }

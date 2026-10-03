@@ -11,7 +11,7 @@ interface Props {
 async function getMenuData(slug: string) {
   const { data: restaurant } = await supabaseAdmin
     .from('restaurants')
-    .select('id, name, slug, theme_color, logo_url, menu_template, status, trial_ends_at')
+    .select('id, name, slug, theme_color, logo_url, menu_template, status, trial_ends_at, phone, address')
     .eq('slug', slug)
     .maybeSingle();
 
@@ -28,7 +28,7 @@ async function getMenuData(slug: string) {
   const [{ data: categories }, { data: items }] = await Promise.all([
     supabaseAdmin.from('categories').select('id, name, sort_order')
       .eq('restaurant_id', restaurant.id).order('sort_order', { ascending: true }),
-    supabaseAdmin.from('menu_items').select('id, category_id, name, description, price, is_veg, is_special, is_available, image_url, sort_order')
+    supabaseAdmin.from('menu_items').select('id, category_id, name, description, price, is_veg, is_special, is_todays_special, is_available, image_url, sort_order')
       .eq('restaurant_id', restaurant.id).eq('is_available', true).order('sort_order', { ascending: true }),
   ]);
 
