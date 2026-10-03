@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { type Category, type MenuItem } from './types';
 import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, EmptyState, Modal, apiFetch } from './shared';
 import { Pencil, Trash2, Search, GripVertical } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -146,7 +146,8 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
   const showDrag = sortBy === 'default' && searchQuery === '';
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
