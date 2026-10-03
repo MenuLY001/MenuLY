@@ -301,11 +301,25 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
                 </div>
 
                 <div>
-                  <label style={lbl}>Tag</label>
-                  <select style={inp} value={form.is_special ? 'special' : 'none'} onChange={e => setForm(f => ({ ...f, is_special: e.target.value === 'special' }))}>
-                    <option value="none">None</option>
-                    <option value="special">Chef's Special</option>
-                  </select>
+                  <label style={lbl}>Special Tags</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: 12 }}>
+                      <div style={{ position: 'relative' }}>
+                        <input type="checkbox" style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} checked={form.is_special} onChange={e => setForm(f => ({ ...f, is_special: e.target.checked }))} />
+                        <div style={{ width: 44, height: 24, backgroundColor: form.is_special ? '#f59e0b' : '#d1d5db', borderRadius: 20, transition: 'background-color 0.2s ease' }} />
+                        <div style={{ position: 'absolute', top: 2, left: form.is_special ? 22 : 2, width: 20, height: 20, backgroundColor: '#fff', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                      </div>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Chef's Special</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: 12, opacity: 0.5 }} onClick={() => toast.info("Add 'is_todays_special' column in Supabase first!")}>
+                      <div style={{ position: 'relative', pointerEvents: 'none' }}>
+                        <input type="checkbox" style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} disabled />
+                        <div style={{ width: 44, height: 24, backgroundColor: '#d1d5db', borderRadius: 20 }} />
+                        <div style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, backgroundColor: '#fff', borderRadius: '50%' }} />
+                      </div>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Today's Special</span>
+                    </label>
+                  </div>
                 </div>
 
                 <div>
