@@ -2,7 +2,7 @@
 
 import { type Restaurant } from './types';
 import { BRAND, Spinner } from './shared';
-import { CheckCircle2, Circle, ExternalLink, QrCode, Smartphone } from 'lucide-react';
+import { Circle, ExternalLink, QrCode, Smartphone } from 'lucide-react';
 import { useCategories, useItems } from './hooks';
 
 export function DashboardPanel({ token, onNavigate, rest }: { token: string; onNavigate: (tab: string) => void; rest: Restaurant | null }) {
@@ -20,6 +20,8 @@ export function DashboardPanel({ token, onNavigate, rest }: { token: string; onN
     { id: 'brand', label: 'Upload your logo in settings', done: !!rest.logo_url, tab: 'settings' },
   ];
   const progress = Math.round((checklist.filter(c => c.done).length / checklist.length) * 100);
+  const remaining = checklist.filter(c => !c.done);
+  const allDone = progress === 100;
 
   return (
     <div className="panel" style={{ gap: 32 }}>
@@ -50,40 +52,45 @@ export function DashboardPanel({ token, onNavigate, rest }: { token: string; onN
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: 32, alignItems: 'start' }} className="dashboard-grid">
         {/* Setup Checklist */}
         <div style={{ background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)', padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.03)' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 16px' }}>Setup Checklist</h2>
-          
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: 'var(--text-sub)', marginBottom: 8 }}>
-              <span>Profile Completion</span>
-              <span>{progress}%</span>
-            </div>
-            <div style={{ height: 8, background: 'var(--bg-hover)', borderRadius: 4, overflow: 'hidden' }}>
-              <div style={{ height: '100%', background: BRAND, width: `${progress}%`, transition: 'width 0.5s ease' }} />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {checklist.map(c => (
-              <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: c.done ? 'var(--bg-soft)' : 'var(--bg-card)', border: `1px solid ${c.done ? '#e2e8f0' : 'var(--border)'}`, borderRadius: 12, transition: 'all .2s' }}>
-                <div style={{ color: c.done ? '#10b981' : '#cbd5e1' }}>
-                  {c.done ? <CheckCircle2 size={20} /> : <Circle size={20} />}
+          {!allDone ? (
+            <>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 16px' }}>Setup Checklist</h2>
+              
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: 'var(--text-sub)', marginBottom: 8 }}>
+                  <span>Profile Completion</span>
+                  <span>{progress}%</span>
                 </div>
-                <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: c.done ? '#64748b' : 'var(--text-main)', textDecoration: c.done ? 'line-through' : 'none' }}>{c.label}</div>
-                {!c.done && <button onClick={() => onNavigate(c.tab)} style={{ background: 'var(--bg-hover)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background .2s' }}>Go →</button>}
+                <div style={{ height: 8, background: 'var(--bg-hover)', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: BRAND, width: `${progress}%`, transition: 'width 0.5s ease' }} />
+                </div>
               </div>
-            ))}
-          </div>
 
-          <div style={{ marginTop: 24, padding: 16, background: '#f0fdf4', borderRadius: 12, border: '1px solid #bbf7d0', display: 'flex', gap: 12, alignItems: 'center' }}>
-            <div style={{ background: '#dcfce7', color: '#16a34a', width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <QrCode size={20} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {remaining.map(c => (
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12 }}>
+                    <div style={{ color: 'var(--text-muted)' }}><Circle size={20} /></div>
+                    <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--text-main)' }}>{c.label}</div>
+                    <button onClick={() => onNavigate(c.tab)} style={{ background: 'var(--bg-hover)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background .2s' }}>Go →</button>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 16px' }}>All Set! 🎉</h2>
+              <div style={{ padding: 16, background: 'var(--bg-success)', borderRadius: 12, border: '1px solid var(--bg-success)', display: 'flex', gap: 12, alignItems: 'center' }}>
+                <div style={{ background: 'var(--text-success)', color: '#fff', width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <QrCode size={20} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-success)' }}>Ready for customers?</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-success)', opacity: 0.9, marginTop: 2 }}>Download your QR code to put on tables.</div>
+                </div>
+                <button onClick={() => onNavigate('settings')} style={{ background: 'var(--text-success)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Get QR</button>
+              </div>
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#166534' }}>Ready for customers?</div>
-              <div style={{ fontSize: 12, color: '#15803d', marginTop: 2 }}>Download your QR code to put on tables.</div>
-            </div>
-            <button onClick={() => onNavigate('settings')} style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Get QR</button>
-          </div>
+          )}
         </div>
 
         {/* Live Preview */}
