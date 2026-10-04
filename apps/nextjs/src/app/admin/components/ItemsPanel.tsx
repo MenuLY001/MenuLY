@@ -14,7 +14,7 @@ function SortableMenuItem({ item, catName, onToggle, onEdit, onDelete, showDrag 
   return (
     <div ref={setNodeRef} style={style} className={`item-row ${isDragging ? 'is-dragging' : ''}`}>
       {showDrag && (
-        <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '12px 8px', color: '#9ca3af', display: 'flex', alignItems: 'center', marginLeft: -8, touchAction: 'none' }}>
+        <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '12px 8px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', marginLeft: -8, touchAction: 'none' }}>
           <GripVertical size={18} />
         </div>
       )}
@@ -37,11 +37,11 @@ function SortableMenuItem({ item, catName, onToggle, onEdit, onDelete, showDrag 
         <div style={{ position: 'relative' }}>
           <input type="checkbox" style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} checked={item.is_available} onChange={onToggle} />
           <div style={{ width: 36, height: 20, backgroundColor: item.is_available ? '#22c55e' : '#d1d5db', borderRadius: 20, transition: 'background-color 0.2s ease' }} />
-          <div style={{ position: 'absolute', top: 2, left: item.is_available ? 18 : 2, width: 16, height: 16, backgroundColor: '#fff', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+          <div style={{ position: 'absolute', top: 2, left: item.is_available ? 18 : 2, width: 16, height: 16, backgroundColor: 'var(--bg-card)', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
         </div>
       </label>
       <div className="item-row__actions">
-        <button onClick={onEdit} className="btn-ghost" title="Edit" style={{ padding: '8px 10px', color: '#6b7280' }}><Pencil size={16} /></button>
+        <button onClick={onEdit} className="btn-ghost" title="Edit" style={{ padding: '8px 10px', color: 'var(--text-sub)' }}><Pencil size={16} /></button>
         <button onClick={onDelete} className="btn-danger-ghost" title="Delete" style={{ padding: '8px 10px', background: 'transparent' }}><Trash2 size={16} /></button>
       </div>
     </div>
@@ -170,10 +170,10 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
           {/* Top Bar: Search & Sort */}
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-              <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: '#9ca3af' }} />
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search menu items..." style={{ ...inp, paddingLeft: 38, width: '100%', border: '1px solid #e5e7eb', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.02)' }} />
+              <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: 'var(--text-muted)' }} />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search menu items..." style={{ ...inp, paddingLeft: 38, width: '100%', border: '1px solid var(--border)', background: 'var(--bg-card)', boxShadow: '0 1px 3px rgba(0,0,0,.02)' }} />
             </div>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...inp, width: 'auto', background: '#fff', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,.02)' }}>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...inp, width: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,.02)' }}>
               <option value="default">Custom Order</option>
               <option value="name">Name (A-Z)</option>
               <option value="price-asc">Price (Low to High)</option>
@@ -234,7 +234,7 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={form.image_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <div style={{ color: '#9ca3af', textAlign: 'center', fontSize: 12, padding: 8 }}>
+                      <div style={{ color: 'var(--text-muted)', textAlign: 'center', fontSize: 12, padding: 8 }}>
                         <div style={{ fontSize: 24, marginBottom: 4 }}>📷</div>
                         Upload JPG/PNG
                       </div>
@@ -273,18 +273,18 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
                 <div>
                   <label style={lbl}>Price (₹) *</label>
                   <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 14, top: 10, color: '#6b7280', fontWeight: 600 }}>₹</span>
+                    <span style={{ position: 'absolute', left: 14, top: 10, color: 'var(--text-sub)', fontWeight: 600 }}>₹</span>
                     <input style={{ ...inp, paddingLeft: 30 }} type="text" inputMode="decimal" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="180" required />
                   </div>
                 </div>
                 
                 <div>
                   <label style={lbl}>Veg type</label>
-                  <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: 8, padding: 4 }}>
-                    <button type="button" onClick={() => setForm(f => ({ ...f, is_veg: true }))} style={{ flex: 1, padding: '8px 4px', border: 'none', borderRadius: 6, background: form.is_veg ? '#fff' : 'transparent', boxShadow: form.is_veg ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', color: form.is_veg ? '#1f2937' : '#6b7280', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <div style={{ display: 'flex', background: 'var(--bg-hover)', borderRadius: 8, padding: 4 }}>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, is_veg: true }))} style={{ flex: 1, padding: '8px 4px', border: 'none', borderRadius: 6, background: form.is_veg ? 'var(--bg-card)' : 'transparent', boxShadow: form.is_veg ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', color: form.is_veg ? 'var(--text-main)' : 'var(--text-sub)', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                        <div style={{ width: 12, height: 12, borderRadius: 2, border: `1.5px solid #22c55e`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#22c55e' }} /></div> Veg
                     </button>
-                    <button type="button" onClick={() => setForm(f => ({ ...f, is_veg: false }))} style={{ flex: 1, padding: '8px 4px', border: 'none', borderRadius: 6, background: !form.is_veg ? '#fff' : 'transparent', boxShadow: !form.is_veg ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', color: !form.is_veg ? '#1f2937' : '#6b7280', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, is_veg: false }))} style={{ flex: 1, padding: '8px 4px', border: 'none', borderRadius: 6, background: !form.is_veg ? 'var(--bg-card)' : 'transparent', boxShadow: !form.is_veg ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', color: !form.is_veg ? 'var(--text-main)' : 'var(--text-sub)', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                        <div style={{ width: 12, height: 12, borderRadius: 2, border: `1.5px solid #ef4444`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#ef4444' }} /></div> Non-veg
                     </button>
                   </div>
@@ -297,7 +297,7 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
                       <div style={{ position: 'relative' }}>
                         <input type="checkbox" style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} checked={form.is_special} onChange={e => setForm(f => ({ ...f, is_special: e.target.checked }))} />
                         <div style={{ width: 44, height: 24, backgroundColor: form.is_special ? '#f59e0b' : '#d1d5db', borderRadius: 20, transition: 'background-color 0.2s ease' }} />
-                        <div style={{ position: 'absolute', top: 2, left: form.is_special ? 22 : 2, width: 20, height: 20, backgroundColor: '#fff', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                        <div style={{ position: 'absolute', top: 2, left: form.is_special ? 22 : 2, width: 20, height: 20, backgroundColor: 'var(--bg-card)', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
                       </div>
                       <span style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Chef`&apos`s Special</span>
                     </label>
@@ -305,7 +305,7 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
                       <div style={{ position: 'relative' }}>
                         <input type="checkbox" style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} checked={form.is_todays_special} onChange={e => setForm(f => ({ ...f, is_todays_special: e.target.checked }))} />
                         <div style={{ width: 44, height: 24, backgroundColor: form.is_todays_special ? '#3b82f6' : '#d1d5db', borderRadius: 20, transition: 'background-color 0.2s ease' }} />
-                        <div style={{ position: 'absolute', top: 2, left: form.is_todays_special ? 22 : 2, width: 20, height: 20, backgroundColor: '#fff', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                        <div style={{ position: 'absolute', top: 2, left: form.is_todays_special ? 22 : 2, width: 20, height: 20, backgroundColor: 'var(--bg-card)', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
                       </div>
                       <span style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Today`&apos`s Special</span>
                     </label>
@@ -318,7 +318,7 @@ export function ItemsPanel({ token, toast }: { token: string; toast: ReturnType<
                     <div style={{ position: 'relative' }}>
                       <input type="checkbox" style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} checked={form.is_available} onChange={e => setForm(f => ({ ...f, is_available: e.target.checked }))} />
                       <div style={{ width: 44, height: 24, backgroundColor: form.is_available ? '#22c55e' : '#d1d5db', borderRadius: 20, transition: 'background-color 0.2s ease' }} />
-                      <div style={{ position: 'absolute', top: 2, left: form.is_available ? 22 : 2, width: 20, height: 20, backgroundColor: '#fff', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                      <div style={{ position: 'absolute', top: 2, left: form.is_available ? 22 : 2, width: 20, height: 20, backgroundColor: 'var(--bg-card)', borderRadius: '50%', transition: 'left 0.2s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
                     </div>
                   </label>
                 </div>

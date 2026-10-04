@@ -32,7 +32,7 @@ export function BillingPanel({ token, toast }: { token: string; toast: ReturnTyp
     trialing:  { bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
     past_due:  { bg: '#fffbeb', color: '#b45309', border: '#fde68a' },
     suspended: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
-    cancelled: { bg: '#f9fafb', color: '#6b7280', border: '#e5e7eb' },
+    cancelled: { bg: '#f9fafb', color: 'var(--text-sub)', border: '#e5e7eb' },
   };
   const ss = SS[status] ?? SS.active;
 
@@ -102,18 +102,18 @@ export function BillingPanel({ token, toast }: { token: string; toast: ReturnTyp
       <h1 className="panel__title">Billing</h1>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Status card */}
-        <div style={{ background: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,.06)' }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 16, padding: 24, border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(0,0,0,.06)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: '#6b7280', marginBottom: 6 }}>Menuly Pro</div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#1a1a2e' }}>₹299 <span style={{ fontSize: 16, fontWeight: 500, color: '#6b7280' }}>/month</span></div>
+              <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--text-sub)', marginBottom: 6 }}>Menuly Pro</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--text-main)' }}>₹299 <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-sub)' }}>/month</span></div>
             </div>
             <span style={{ padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 600, background: ss.bg, color: ss.color, border: `1.5px solid ${ss.border}` }}>{status}</span>
           </div>
           <div style={{ borderTop: '1px solid #f0f2f8', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
-            {trialEndsAt && status === 'trialing' && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15 }}><span style={{ color: '#6b7280' }}>Trial ends</span><strong style={{ color: '#1a1a2e' }}>{fmtDate(trialEndsAt)} <span style={{ color: '#1d4ed8' }}>({daysLeft(trialEndsAt)} days left)</span></strong></div>}
-            {(sub?.current_period_end as string | null | undefined) && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15 }}><span style={{ color: '#6b7280' }}>Next billing</span><strong style={{ color: '#1a1a2e' }}>{fmtDate(sub!.current_period_end as string)}</strong></div>}
-            {(plan?.price_paise as number | null | undefined) && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15 }}><span style={{ color: '#6b7280' }}>Amount</span><strong style={{ color: '#1a1a2e' }}>₹{Math.round((plan!.price_paise as number) / 100)}/month</strong></div>}
+            {trialEndsAt && status === 'trialing' && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15 }}><span style={{ color: 'var(--text-sub)' }}>Trial ends</span><strong style={{ color: 'var(--text-main)' }}>{fmtDate(trialEndsAt)} <span style={{ color: '#1d4ed8' }}>({daysLeft(trialEndsAt)} days left)</span></strong></div>}
+            {(sub?.current_period_end as string | null | undefined) && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15 }}><span style={{ color: 'var(--text-sub)' }}>Next billing</span><strong style={{ color: 'var(--text-main)' }}>{fmtDate(sub!.current_period_end as string)}</strong></div>}
+            {(plan?.price_paise as number | null | undefined) && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15 }}><span style={{ color: 'var(--text-sub)' }}>Amount</span><strong style={{ color: 'var(--text-main)' }}>₹{Math.round((plan!.price_paise as number) / 100)}/month</strong></div>}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {!hasActiveSub && status !== 'cancelled' && (
@@ -122,31 +122,31 @@ export function BillingPanel({ token, toast }: { token: string; toast: ReturnTyp
               </button>
             )}
             {hasActiveSub && !cancelPending && (
-              <button onClick={() => setShowCancel(true)} disabled={actionLoading} style={{ background: 'transparent', border: 'none', color: '#9ca3af', textDecoration: 'underline', padding: '8px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', alignSelf: 'center', marginTop: 8 }}>Cancel subscription</button>
+              <button onClick={() => setShowCancel(true)} disabled={actionLoading} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', textDecoration: 'underline', padding: '8px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', alignSelf: 'center', marginTop: 8 }}>Cancel subscription</button>
             )}
           </div>
         </div>
         {/* Payment history */}
-        <div style={{ background: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 800, color: '#1a1a2e' }}>Payment History</h3>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 16, padding: 24, border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 800, color: 'var(--text-main)' }}>Payment History</h3>
           {payments.length > 0 ? (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-                <thead><tr>{['Date', 'Amount', 'Status', 'Ref'].map(h => <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: '#6b7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', borderBottom: '2px solid #f0f2f8' }}>{h}</th>)}</tr></thead>
+                <thead><tr>{['Date', 'Amount', 'Status', 'Ref'].map(h => <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-sub)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', borderBottom: '2px solid #f0f2f8' }}>{h}</th>)}</tr></thead>
                 <tbody>
                   {payments.map((p, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid #f0f2f8' }}>
                       <td style={{ padding: '14px 12px', color: '#374151', fontWeight: 500 }}>{fmtDate(p.created_at as string)}</td>
-                      <td style={{ padding: '14px 12px', color: '#1a1a2e', fontWeight: 700 }}>₹{Math.round((p.amount_paise as number) / 100)}</td>
+                      <td style={{ padding: '14px 12px', color: 'var(--text-main)', fontWeight: 700 }}>₹{Math.round((p.amount_paise as number) / 100)}</td>
                       <td style={{ padding: '14px 12px' }}><span style={{ color: p.status === 'captured' ? '#15803d' : '#dc2626', fontWeight: 700, background: p.status === 'captured' ? '#f0fdf4' : '#fef2f2', padding: '4px 8px', borderRadius: 6 }}>{p.status === 'captured' ? '✓ Paid' : '✕ Failed'}</span></td>
-                      <td style={{ padding: '14px 12px', color: '#6b7280', fontFamily: 'monospace', fontSize: 12 }}>{(p.razorpay_payment_id as string)?.slice(0, 18) ?? '—'}</td>
+                      <td style={{ padding: '14px 12px', color: 'var(--text-sub)', fontFamily: 'monospace', fontSize: 12 }}>{(p.razorpay_payment_id as string)?.slice(0, 18) ?? '—'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <div style={{ color: '#6b7280', fontSize: 14, textAlign: 'center', padding: '32px 0', background: '#f8f9fc', borderRadius: 12 }}>
+            <div style={{ color: 'var(--text-sub)', fontSize: 14, textAlign: 'center', padding: '32px 0', background: 'var(--bg-main)', borderRadius: 12 }}>
               No payments yet.
             </div>
           )}
@@ -154,9 +154,9 @@ export function BillingPanel({ token, toast }: { token: string; toast: ReturnTyp
       </div>
       {showCancel && (
         <Modal title="Cancel Subscription?" onClose={() => setShowCancel(false)}>
-          <p style={{ color: '#6b7280', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>You will keep full access until the end of your current billing period. After that, your menu will be suspended.</p>
+          <p style={{ color: 'var(--text-sub)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>You will keep full access until the end of your current billing period. After that, your menu will be suspended.</p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <button onClick={() => setShowCancel(false)} style={{ padding: '10px 16px', borderRadius: 8, border: 'none', background: '#f0f2f8', color: '#374151', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Keep Subscription</button>
+            <button onClick={() => setShowCancel(false)} style={{ padding: '10px 16px', borderRadius: 8, border: 'none', background: 'var(--bg-hover)', color: '#374151', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Keep Subscription</button>
             <button onClick={cancelSub} disabled={actionLoading} style={{ padding: '10px 16px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>{actionLoading ? 'Cancelling…' : 'Yes, Cancel'}</button>
           </div>
         </Modal>

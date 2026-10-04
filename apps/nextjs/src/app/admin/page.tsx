@@ -12,7 +12,7 @@ import { ItemsPanel } from './components/ItemsPanel';
 import { SettingsPanel } from './components/SettingsPanel';
 import { BillingPanel } from './components/BillingPanel';
 import { SignInScreen } from './components/SignInScreen';
-import { LayoutDashboard, List, Settings, CreditCard, ExternalLink, LogOut, Home, X as XIcon } from 'lucide-react';
+import { LayoutDashboard, List, Settings, CreditCard, ExternalLink, LogOut, Home, X as XIcon, Moon, Sun } from 'lucide-react';
 import { useRestaurant } from './components/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -66,6 +66,25 @@ export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [tab, setTab] = useState<Tab>('dashboard');
   const [isImpersonating] = useState(() => typeof window !== 'undefined' ? !!localStorage.getItem('menuly_impersonate') : false);
+  const [isDarkMode, setIsDarkMode] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('menuly_dark') !== '0' : true);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('menuly_dark') !== '0') {
+      document.body.classList.add('dark-mode');
+    }
+  }, []);
+
+  const toggleDark = () => {
+    if (isDarkMode) {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('menuly_dark', '0');
+      setIsDarkMode(false);
+    } else {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('menuly_dark', '1');
+      setIsDarkMode(true);
+    }
+  };
 
   const toastObj = useToast();
   const { toasts } = toastObj;
@@ -97,7 +116,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fc', color: '#1a1a2e', paddingTop: isImpersonating ? 40 : 0 }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', paddingTop: isImpersonating ? 40 : 0 }}>
       {/* ── Impersonation Banner ────────────────────────────────────── */}
       {isImpersonating && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 40, background: '#ef4444', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, fontWeight: 700, fontSize: 13, gap: 12 }}>
@@ -122,10 +141,10 @@ export default function AdminPage() {
       </div>
 
       {/* ── Sidebar (Desktop only) ────────────────────────────────────── */}
-      <aside className="admin-sidebar" style={{ width: 240, background: '#fff', borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', padding: 24, position: 'fixed', top: 0, bottom: 0, zIndex: 50 }}>
+      <aside className="admin-sidebar" style={{ width: 240, background: 'var(--bg-card)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', padding: 24, position: 'fixed', top: 0, bottom: 0, zIndex: 50 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40 }}>
           <div style={{ width: 32, height: 32, borderRadius: 8, background: '#1a1a2e', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>M</div>
-          <span style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e' }}>Menuly</span>
+          <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)' }}>Menuly</span>
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
@@ -140,25 +159,32 @@ export default function AdminPage() {
               key={t.id}
               onClick={() => setTab(t.id as Tab)}
               onMouseEnter={t.onHover}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, border: 'none', background: tab === t.id ? '#f0f2f8' : 'transparent', color: tab === t.id ? '#1a1a2e' : '#6b7280', fontSize: 14, fontWeight: tab === t.id ? 700 : 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'background .15s' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, border: 'none', background: tab === t.id ? 'var(--bg-hover)' : 'transparent', color: tab === t.id ? 'var(--text-main)' : 'var(--text-sub)', fontSize: 14, fontWeight: tab === t.id ? 700 : 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'background .15s' }}
             >
-              <div style={{ color: tab === t.id ? '#1a1a2e' : '#9ca3af' }}>{t.icon}</div>
+              <div style={{ color: tab === t.id ? 'var(--text-main)' : 'var(--text-muted)' }}>{t.icon}</div>
               {t.label}
             </button>
           ))}
         </nav>
 
         {/* Sign out */}
-        <button onClick={() => supabase.auth.signOut()} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 600, color: '#9ca3af', fontFamily: 'inherit', border: 'none', cursor: 'pointer', background: 'transparent', transition: 'color .15s, background .15s', marginTop: 4 }}
+        <button onClick={() => supabase.auth.signOut()} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'var(--text-muted)', fontFamily: 'inherit', border: 'none', cursor: 'pointer', background: 'transparent', transition: 'color .15s, background .15s', marginTop: 4 }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#dc2626'; (e.currentTarget as HTMLElement).style.background = '#fef2f2'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#9ca3af'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
           <LogOut size={16} /> Sign Out
         </button>
 
+        {/* Dark mode toggle */}
+        <button onClick={toggleDark} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'var(--text-muted)', fontFamily: 'inherit', border: 'none', cursor: 'pointer', background: 'transparent', transition: 'color .15s, background .15s', marginTop: 4 }}
+          onMouseEnter={e => { e.currentTarget.style.color = isDarkMode ? '#fef08a' : '#1a1a2e'; e.currentTarget.style.background = isDarkMode ? 'rgba(254, 240, 138, 0.1)' : '#f0f2f8'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.background = 'transparent'; }}>
+          {isDarkMode ? <Sun size={16} /> : <Moon size={16} />} {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+        </button>
+
         {/* Powered by */}
-        <div style={{ marginTop: 'auto', paddingTop: 32, textAlign: 'center', fontSize: 12, color: '#9ca3af', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <div style={{ marginTop: 'auto', paddingTop: 32, textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
           Powered by 
-          <a href="https://vyoma.world" target="_blank" rel="noopener noreferrer" style={{ color: '#1a1a2e', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <a href="https://vyoma.world" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-main)', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/vyoma-logo.jpg" alt="" style={{ width: 14, height: 14, borderRadius: 2 }} />
             vyoma.world
@@ -176,8 +202,8 @@ export default function AdminPage() {
         </header>
 
         {/* Mobile header */}
-        <header style={{ display: 'none', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#fff', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, zIndex: 10 }} className="admin-mobile-header">
-          <span style={{ fontSize: 16, fontWeight: 800, color: '#1a1a2e' }}>Menuly</span>
+        <header style={{ display: 'none', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 10 }} className="admin-mobile-header">
+          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-main)' }}>Menuly</span>
           <a href={`/menu/${restaurant?.slug ?? ''}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, background: '#1a1a2e', color: '#fff', textDecoration: 'none' }}>
             View <ExternalLink size={12} />
           </a>
@@ -195,7 +221,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <nav className="mobile-bottom-nav" style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #e5e7eb', zIndex: 50, paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav className="mobile-bottom-nav" style={{ display: 'none', position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--bg-card)', borderTop: '1px solid var(--border)', zIndex: 50, paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: 60 }}>
           {[
             { id: 'dashboard', label: 'Home', icon: <Home size={20} /> },
@@ -206,7 +232,7 @@ export default function AdminPage() {
             <button
               key={t.id}
               onClick={() => setTab(t.id as Tab)}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1, background: 'transparent', border: 'none', color: tab === t.id ? '#1a1a2e' : '#9ca3af', transition: 'color .15s' }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1, background: 'transparent', border: 'none', color: tab === t.id ? 'var(--text-main)' : 'var(--text-muted)', transition: 'color .15s' }}
             >
               {t.icon}
               <span style={{ fontSize: 10, fontWeight: 600 }}>{t.label}</span>
@@ -221,30 +247,30 @@ export default function AdminPage() {
 
         .panel                 { display: flex; flex-direction: column; gap: 24px; }
         .panel__header         { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
-        .panel__title          { font-size: 24px; font-weight: 800; color: #1a1a2e; margin: 0; }
-        .panel__subtitle       { font-size: 14px; color: #9ca3af; margin: 2px 0 0; }
+        .panel__title          { font-size: 24px; font-weight: 800; color: var(--text-main); margin: 0; }
+        .panel__subtitle       { font-size: 14px; color: var(--text-muted); margin: 2px 0 0; }
         .panel-warn            { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; padding: 12px 16px; border-radius: 10px; font-size: 14px; }
 
         .item-list             { display: flex; flex-direction: column; gap: 8px; }
         .item-row              { display: flex; align-items: center; gap: 12px; background: #fff; padding: 14px 16px; border-radius: 12px; border: 1px solid #e5e7eb; transition: box-shadow 0.15s; }
         .item-row:hover        { box-shadow: 0 2px 12px rgba(0,0,0,.07); }
         .item-row__sort        { display: flex; flex-direction: column; gap: 2px; }
-        .sort-btn              { width: 24px; height: 22px; font-size: 12px; color: #9ca3af; background: #f0f2f8; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; transition: color .1s; }
-        .sort-btn:hover:not(:disabled) { color: #1a1a2e; background: #e5e7eb; }
+        .sort-btn              { width: 24px; height: 22px; font-size: 12px; color: var(--text-muted); background: var(--bg-hover); border: none; border-radius: 4px; cursor: pointer; font-family: inherit; transition: color .1s; }
+        .sort-btn:hover:not(:disabled) { color: var(--text-main); background: var(--border); }
         .sort-btn:disabled     { opacity: 0.3; cursor: not-allowed; }
-        .item-row__name        { flex: 1; font-size: 15px; font-weight: 600; color: #1a1a2e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+        .item-row__name        { flex: 1; font-size: 15px; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
         .item-row__actions     { display: flex; gap: 8px; flex-shrink: 0; }
-        .item-row__img         { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #f0f2f8; flex-shrink: 0; }
-        .item-row__meta        { font-size: 12px; color: #9ca3af; }
-        .item-row__price       { font-size: 14px; font-weight: 800; color: #6b7280; flex-shrink: 0; } /* Neutral price color */
+        .item-row__img         { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: var(--bg-hover); flex-shrink: 0; }
+        .item-row__meta        { font-size: 12px; color: var(--text-muted); }
+        .item-row__price       { font-size: 14px; font-weight: 800; color: var(--text-sub); flex-shrink: 0; } /* Neutral price color */
 
         .items-filter          { display: flex; gap: 8px; flex-wrap: wrap; }
-        .filter-pill           { padding: 6px 14px; border-radius: 9999px; background: #f0f2f8; border: 1.5px solid #e5e7eb; font-size: 13px; font-weight: 600; color: #5f6380; font-family: inherit; cursor: pointer; transition: all .15s; }
-        .filter-pill:hover     { background: #e5e7eb; }
+        .filter-pill           { padding: 6px 14px; border-radius: 9999px; background: var(--bg-hover); border: 1.5px solid #e5e7eb; font-size: 13px; font-weight: 600; color: #5f6380; font-family: inherit; cursor: pointer; transition: all .15s; }
+        .filter-pill:hover     { background: var(--border); }
         .filter-pill--active   { background: var(--brand, #e67e22)18; color: var(--brand, #e67e22); border-color: var(--brand, #e67e22); }
 
-        .btn-ghost             { padding: 8px 14px; background: #f0f2f8; color: #374151; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .15s; }
-        .btn-ghost:hover       { background: #e5e7eb; }
+        .btn-ghost             { padding: 8px 14px; background: var(--bg-hover); color: #374151; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .15s; }
+        .btn-ghost:hover       { background: var(--border); }
         .btn-danger-ghost      { padding: 8px 14px; background: #fef2f2; color: #dc2626; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .15s; }
         .btn-danger-ghost:hover{ background: #fee2e2; }
 
@@ -265,6 +291,51 @@ export default function AdminPage() {
           .settings-layout     { grid-template-columns: 1fr; }
           .admin-content       { padding: 16px 16px 100px !important; }
         }
+
+        /* Dark Mode CSS Variables */
+        :root {
+          --bg-main: #f8f9fc;
+          --bg-card: #fff;
+          --text-main: #1a1a2e;
+          --text-sub: #6b7280;
+          --text-muted: #9ca3af;
+          --border: #e5e7eb;
+          --bg-hover: #f0f2f8;
+          --bg-soft: #f8fafc;
+        }
+        body.dark-mode {
+          --bg-main: #121212;
+          --bg-card: #1a1b1e;
+          --text-main: #f3f4f6;
+          --text-sub: #9ca3af;
+          --text-muted: #6b7280;
+          --border: #2c2d30;
+          --bg-hover: #2c2d30;
+          --bg-soft: #25262b;
+        }
+
+        /* Generic styles using CSS vars instead of overrides */
+        .admin-sidebar, 
+        .admin-mobile-header,
+        .mobile-bottom-nav { background: var(--bg-card); border-color: var(--border); }
+        .admin-sidebar button, 
+        .mobile-bottom-nav button { color: var(--text-muted); }
+        .admin-sidebar button:hover { background: var(--bg-hover); color: var(--text-main); }
+        .item-row { background: var(--bg-card); border-color: var(--border); }
+        .item-row:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.05); }
+        body.dark-mode .item-row:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.5); }
+        .item-row__name { color: var(--text-main); }
+        .panel__title { color: var(--text-main); }
+        .btn-ghost { background: var(--bg-hover); color: var(--text-main); }
+        .btn-ghost:hover { background: var(--border); }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: var(--bg-hover); border-color: var(--border); color: #fff; }
+        .sort-btn { background: var(--bg-hover); color: var(--text-muted); }
+        .sort-btn:hover:not(:disabled) { background: var(--border); color: var(--text-main); }
+        .filter-pill { background: var(--bg-hover); border-color: var(--border); color: var(--text-muted); }
+        .filter-pill--active { background: rgba(230,126,34,0.1); color: #e67e22; border-color: #e67e22; }
+        body.dark-mode .filter-pill--active { background: rgba(230,126,34,0.2); }
+        .panel-warn { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+        body.dark-mode .panel-warn { background: rgba(146, 64, 14, 0.2); border-color: #92400e; color: #fde68a; }
       `}</style>
     </div>
   );

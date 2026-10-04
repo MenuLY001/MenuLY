@@ -2,16 +2,19 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase-client';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 
 type Step = 'form' | 'payment' | 'done';
 
-const inputStyle: React.CSSProperties = { width:'100%', padding:'11px 14px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:14, boxSizing:'border-box', outline:'none', fontFamily:'inherit', transition:'border-color .15s' };
+const inputStyle: React.CSSProperties = { width:'100%', padding:'11px 14px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:14, boxSizing:'border-box', outline:'none', fontFamily:'inherit', transition:'border-color .15s', backgroundColor: '#fff', color: '#1a1a2e' };
 const primaryBtn: React.CSSProperties = { width:'100%', background:'linear-gradient(135deg,#e67e22,#d35400)', color:'#fff', border:'none', borderRadius:10, padding:'13px', fontWeight:700, fontSize:15, cursor:'pointer', fontFamily:'inherit' };
 
 export default function RegisterPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>('form');
-  const [form, setForm] = useState({ restaurant_name:'', restaurant_slug:'', email:'', password:'' });
+  const [form, setForm] = useState({ restaurant_name:'', restaurant_slug:'', email:'', password:'', confirm_password:'' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [accessToken, setAccessToken] = useState('');
@@ -23,7 +26,9 @@ export default function RegisterPage() {
   };
 
   async function handleRegister(e: React.FormEvent) {
-    e.preventDefault(); setError(''); setLoading(true);
+    e.preventDefault();
+    if (form.password !== form.confirm_password) { setError('Passwords do not match'); return; }
+    setError(''); setLoading(true);
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form),
@@ -98,7 +103,21 @@ export default function RegisterPage() {
           </div>
           <div>
             <label style={{ fontSize:12, fontWeight:600, color:'#374151', display:'block', marginBottom:4 }}>Password</label>
-            <input style={inputStyle} type="password" placeholder="min. 8 characters" value={form.password} onChange={set('password')} required minLength={8} />
+            <div style={{ position: 'relative' }}>
+              <input style={{...inputStyle, paddingRight: 40}} type={showPassword ? "text" : "password"} placeholder="min. 8 characters" value={form.password} onChange={set('password')} required minLength={8} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex' }}>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label style={{ fontSize:12, fontWeight:600, color:'#374151', display:'block', marginBottom:4 }}>Confirm Password</label>
+            <div style={{ position: 'relative' }}>
+              <input style={{...inputStyle, paddingRight: 40}} type={showConfirmPassword ? "text" : "password"} placeholder="Repeat password" value={form.confirm_password} onChange={set('confirm_password')} required minLength={8} />
+              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex' }}>
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           {error && <div style={{ background:'#fef2f2', border:'1px solid #fca5a5', color:'#dc2626', padding:'10px 14px', borderRadius:8, fontSize:13 }}>{error}</div>}
           <button type="submit" style={primaryBtn} disabled={loading}>{loading ? 'Creating account…' : 'Create Free Account'}</button>

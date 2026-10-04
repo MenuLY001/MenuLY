@@ -35,18 +35,18 @@ export function SignInScreen() {
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '12px 14px', borderRadius: 10,
     border: '1.5px solid #e5e7eb', fontSize: 14, boxSizing: 'border-box',
-    outline: 'none', fontFamily: 'inherit', transition: 'border-color .15s', color: '#1a1a2e',
-    background: '#fff',
+    outline: 'none', fontFamily: 'inherit', transition: 'border-color .15s', color: 'var(--text-main)',
+    background: 'var(--bg-card)',
   };
 
   if (showForgot) return (
     <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)', padding: 20 }}>
-      <div style={{ background: '#fff', borderRadius: 20, padding: '40px 36px', width: '100%', maxWidth: 420, boxShadow: '0 24px 64px rgba(0,0,0,.25)' }}>
-        <button onClick={() => { setShowForgot(false); setForgotSent(false); }} style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: 13, cursor: 'pointer', padding: 0, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'inherit' }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius: 20, padding: '40px 36px', width: '100%', maxWidth: 420, boxShadow: '0 24px 64px rgba(0,0,0,.25)' }}>
+        <button onClick={() => { setShowForgot(false); setForgotSent(false); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 13, cursor: 'pointer', padding: 0, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'inherit' }}>
           ← Back to sign in
         </button>
-        <h2 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 6px', color: '#1a1a2e' }}>Reset Password</h2>
-        <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 24 }}>We&apos;ll send a reset link to your email.</p>
+        <h2 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 6px', color: 'var(--text-main)' }}>Reset Password</h2>
+        <p style={{ color: 'var(--text-sub)', fontSize: 14, marginBottom: 24 }}>We&apos;ll send a reset link to your email.</p>
         {forgotSent ? (
           <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: 16, color: '#15803d', fontSize: 14, textAlign: 'center' }}>
             ✅ Reset link sent! Check your inbox.
@@ -65,13 +65,13 @@ export function SignInScreen() {
 
   return (
     <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)', padding: 20 }}>
-      <div style={{ background: '#fff', borderRadius: 20, padding: '40px 36px', width: '100%', maxWidth: 420, boxShadow: '0 24px 64px rgba(0,0,0,.25)' }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius: 20, padding: '40px 36px', width: '100%', maxWidth: 420, boxShadow: '0 24px 64px rgba(0,0,0,.25)' }}>
 
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ width: 64, height: 64, background: 'linear-gradient(135deg,#1a1a2e,#2d2d4e)', borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, margin: '0 auto 16px', boxShadow: '0 8px 24px rgba(26,26,46,.3)' }}>🍽️</div>
-          <h1 style={{ fontSize: 24, fontWeight: 900, margin: '0 0 6px', color: '#1a1a2e', letterSpacing: '-.5px' }}>Welcome back</h1>
-          <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Sign in to your restaurant dashboard</p>
+          <h1 style={{ fontSize: 24, fontWeight: 900, margin: '0 0 6px', color: 'var(--text-main)', letterSpacing: '-.5px' }}>Welcome back</h1>
+          <p style={{ color: 'var(--text-sub)', fontSize: 14, margin: 0 }}>Sign in to your restaurant dashboard</p>
         </div>
 
         {/* Form */}
@@ -115,21 +115,21 @@ export function SignInScreen() {
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0' }}>
           <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
-          <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 600 }}>NEW HERE?</span>
+          <span style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>NEW HERE?</span>
           <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
         </div>
 
         {/* Register CTA */}
         <a href="/register"
-          style={{ display: 'block', padding: '13px', background: '#fff', color: '#1a1a2e', textDecoration: 'none', borderRadius: 12, fontWeight: 700, fontSize: 15, textAlign: 'center', border: '2px solid #e5e7eb', transition: 'border-color .15s, background .15s' }}
+          style={{ display: 'block', padding: '13px', background: 'var(--bg-card)', color: 'var(--text-main)', textDecoration: 'none', borderRadius: 12, fontWeight: 700, fontSize: 15, textAlign: 'center', border: '2px solid #e5e7eb', transition: 'border-color .15s, background .15s' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#1a1a2e'; (e.currentTarget as HTMLElement).style.background = '#f9fafb'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#e5e7eb'; (e.currentTarget as HTMLElement).style.background = '#fff'; }}>
           Create a free account
         </a>
 
-        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 12, color: '#9ca3af' }}>
+        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 12, color: 'var(--text-muted)' }}>
           Powered by{' '}
-          <a href="https://vyoma.world" target="_blank" rel="noopener noreferrer" style={{ color: '#1a1a2e', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+          <a href="https://vyoma.world" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-main)', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/vyoma-logo.jpg" alt="" style={{ width: 12, height: 12, borderRadius: 2 }} />
             vyoma.world

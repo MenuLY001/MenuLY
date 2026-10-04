@@ -30,46 +30,46 @@ export function DashboardPanel({ token, onNavigate, rest }: { token: string; onN
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
         {/* Stats */}
-        <div style={{ background: '#fff', padding: 24, borderRadius: 16, border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,.03)' }}>
-          <div style={{ color: '#6b7280', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Menu Items</div>
-          <div style={{ fontSize: 32, fontWeight: 800, color: '#1a1a2e' }}>{items.length}</div>
+        <div style={{ background: 'var(--bg-card)', padding: 24, borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(0,0,0,.03)' }}>
+          <div style={{ color: 'var(--text-sub)', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Menu Items</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--text-main)' }}>{items.length}</div>
           <div style={{ fontSize: 13, color: '#16a34a', marginTop: 4, fontWeight: 600 }}>{items.filter(i => i.is_available).length} available right now</div>
         </div>
-        <div style={{ background: '#fff', padding: 24, borderRadius: 16, border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,.03)' }}>
-          <div style={{ color: '#6b7280', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Categories</div>
-          <div style={{ fontSize: 32, fontWeight: 800, color: '#1a1a2e' }}>{categories.length}</div>
-          <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 4 }}>Organized for easy browsing</div>
+        <div style={{ background: 'var(--bg-card)', padding: 24, borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(0,0,0,.03)' }}>
+          <div style={{ color: 'var(--text-sub)', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Categories</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--text-main)' }}>{categories.length}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Organized for easy browsing</div>
         </div>
-        <div style={{ background: '#fff', padding: 24, borderRadius: 16, border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,.03)' }}>
-          <div style={{ color: '#6b7280', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Today&apos;s QR Scans</div>
-          <div style={{ fontSize: 32, fontWeight: 800, color: '#1a1a2e' }}>--</div>
+        <div style={{ background: 'var(--bg-card)', padding: 24, borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 2px 12px rgba(0,0,0,.03)' }}>
+          <div style={{ color: 'var(--text-sub)', fontSize: 14, fontWeight: 600, marginBottom: 8 }}>Today&apos;s QR Scans</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--text-main)' }}>--</div>
           <div style={{ fontSize: 13, color: '#f59e0b', marginTop: 4, fontWeight: 600 }}>Analytics coming soon 🚀</div>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: 32, alignItems: 'start' }} className="dashboard-grid">
         {/* Setup Checklist */}
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e5e7eb', padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.03)' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', margin: '0 0 16px' }}>Setup Checklist</h2>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)', padding: 24, boxShadow: '0 2px 12px rgba(0,0,0,.03)' }}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 16px' }}>Setup Checklist</h2>
           
           <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: '#6b7280', marginBottom: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: 'var(--text-sub)', marginBottom: 8 }}>
               <span>Profile Completion</span>
               <span>{progress}%</span>
             </div>
-            <div style={{ height: 8, background: '#f0f2f8', borderRadius: 4, overflow: 'hidden' }}>
+            <div style={{ height: 8, background: 'var(--bg-hover)', borderRadius: 4, overflow: 'hidden' }}>
               <div style={{ height: '100%', background: BRAND, width: `${progress}%`, transition: 'width 0.5s ease' }} />
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {checklist.map(c => (
-              <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: c.done ? '#f8fafc' : '#fff', border: `1px solid ${c.done ? '#e2e8f0' : '#e5e7eb'}`, borderRadius: 12, transition: 'all .2s' }}>
+              <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: c.done ? 'var(--bg-soft)' : 'var(--bg-card)', border: `1px solid ${c.done ? '#e2e8f0' : 'var(--border)'}`, borderRadius: 12, transition: 'all .2s' }}>
                 <div style={{ color: c.done ? '#10b981' : '#cbd5e1' }}>
                   {c.done ? <CheckCircle2 size={20} /> : <Circle size={20} />}
                 </div>
-                <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: c.done ? '#64748b' : '#1a1a2e', textDecoration: c.done ? 'line-through' : 'none' }}>{c.label}</div>
-                {!c.done && <button onClick={() => onNavigate(c.tab)} style={{ background: '#f0f2f8', color: '#1a1a2e', border: 'none', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background .2s' }}>Go →</button>}
+                <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: c.done ? '#64748b' : 'var(--text-main)', textDecoration: c.done ? 'line-through' : 'none' }}>{c.label}</div>
+                {!c.done && <button onClick={() => onNavigate(c.tab)} style={{ background: 'var(--bg-hover)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background .2s' }}>Go →</button>}
               </div>
             ))}
           </div>
@@ -89,21 +89,21 @@ export function DashboardPanel({ token, onNavigate, rest }: { token: string; onN
         {/* Live Preview */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#1a1a2e', fontWeight: 700, fontSize: 15 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-main)', fontWeight: 700, fontSize: 15 }}>
               <Smartphone size={18} /> Live Preview
             </div>
             <a href={menuUrl} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: BRAND, fontWeight: 700, textDecoration: 'none' }}>Open <ExternalLink size={14} /></a>
           </div>
           
-          <div style={{ width: 320, height: 640, background: '#fff', borderRadius: 40, padding: 8, border: '1px solid #e5e7eb', boxShadow: '0 20px 40px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05)', position: 'relative' }}>
+          <div style={{ width: 320, height: 640, background: 'var(--bg-card)', borderRadius: 40, padding: 8, border: '1px solid var(--border)', boxShadow: '0 20px 40px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05)', position: 'relative' }}>
             {/* Notch */}
-            <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', width: 100, height: 24, background: '#fff', borderBottomLeftRadius: 16, borderBottomRightRadius: 16, zIndex: 10 }}></div>
+            <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', width: 100, height: 24, background: 'var(--bg-card)', borderBottomLeftRadius: 16, borderBottomRightRadius: 16, zIndex: 10 }}></div>
             {/* Iframe container */}
-            <div style={{ width: '100%', height: '100%', borderRadius: 32, overflow: 'hidden', background: '#f8f9fc', border: '1px solid #f0f0f0' }}>
+            <div style={{ width: '100%', height: '100%', borderRadius: 32, overflow: 'hidden', background: 'var(--bg-main)', border: '1px solid #f0f0f0' }}>
               {menuUrl ? (
                 <iframe src={menuUrl} style={{ width: '100%', height: '100%', border: 'none' }} title="Menu Preview" />
               ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>Loading...</div>
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Loading...</div>
               )}
             </div>
           </div>

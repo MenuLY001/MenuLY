@@ -13,12 +13,12 @@ function SortableCategoryItem({ category, onEdit, onDelete }: { category: Catego
   
   return (
     <div ref={setNodeRef} style={style} className={`item-row ${isDragging ? 'is-dragging' : ''}`}>
-      <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '12px 8px', color: '#9ca3af', display: 'flex', alignItems: 'center', touchAction: 'none' }}>
+      <div {...attributes} {...listeners} style={{ cursor: 'grab', padding: '12px 8px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', touchAction: 'none' }}>
         <GripVertical size={18} />
       </div>
       <span className="item-row__name">{category.name}</span>
       <div className="item-row__actions">
-        <button onClick={onEdit} className="btn-ghost" title="Edit" style={{ padding: '8px 10px', color: '#6b7280' }}><Pencil size={16} /></button>
+        <button onClick={onEdit} className="btn-ghost" title="Edit" style={{ padding: '8px 10px', color: 'var(--text-sub)' }}><Pencil size={16} /></button>
         <button onClick={onDelete} className="btn-danger-ghost" title="Delete" style={{ padding: '8px 10px', background: 'transparent' }}><Trash2 size={16} /></button>
       </div>
     </div>
