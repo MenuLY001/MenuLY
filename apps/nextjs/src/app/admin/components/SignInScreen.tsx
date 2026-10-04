@@ -40,7 +40,7 @@ export function SignInScreen() {
   };
 
   if (showForgot) return (
-    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)', padding: 20 }}>
+    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', padding: 20 }}>
       <div style={{ background: 'var(--bg-card)', borderRadius: 20, padding: '40px 36px', width: '100%', maxWidth: 420, boxShadow: '0 24px 64px rgba(0,0,0,.25)' }}>
         <button onClick={() => { setShowForgot(false); setForgotSent(false); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 13, cursor: 'pointer', padding: 0, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'inherit' }}>
           ← Back to sign in
@@ -64,7 +64,7 @@ export function SignInScreen() {
   );
 
   return (
-    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)', padding: 20 }}>
+    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', padding: 20 }}>
       <div style={{ background: 'var(--bg-card)', borderRadius: 20, padding: '40px 36px', width: '100%', maxWidth: 420, boxShadow: '0 24px 64px rgba(0,0,0,.25)' }}>
 
         {/* Logo */}
@@ -77,24 +77,24 @@ export function SignInScreen() {
         {/* Form */}
         <form onSubmit={handleSignIn} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.4px' }}>Email</label>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-main)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.4px' }}>Email</label>
             <input
               style={inputStyle} type="email" placeholder="you@restaurant.com"
               value={email} onChange={e => setEmail(e.target.value)} required
-              onFocus={e => (e.target.style.borderColor = '#1a1a2e')}
-              onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
+              onFocus={e => (e.target.style.borderColor = 'var(--text-main)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--border)')}
             />
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '.4px' }}>Password</label>
+              <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '.4px' }}>Password</label>
               <button type="button" onClick={() => setShowForgot(true)} style={{ background: 'none', border: 'none', color: '#e67e22', fontSize: 12, cursor: 'pointer', fontWeight: 600, padding: 0, fontFamily: 'inherit' }}>Forgot password?</button>
             </div>
             <input
               style={inputStyle} type="password" placeholder="••••••••"
               value={password} onChange={e => setPassword(e.target.value)} required
-              onFocus={e => (e.target.style.borderColor = '#1a1a2e')}
-              onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
+              onFocus={e => (e.target.style.borderColor = 'var(--text-main)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--border)')}
             />
           </div>
 
@@ -114,16 +114,16 @@ export function SignInScreen() {
 
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0' }}>
-          <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           <span style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>NEW HERE?</span>
-          <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
 
         {/* Register CTA */}
         <a href="/register"
-          style={{ display: 'block', padding: '13px', background: 'var(--bg-card)', color: 'var(--text-main)', textDecoration: 'none', borderRadius: 12, fontWeight: 700, fontSize: 15, textAlign: 'center', border: '2px solid #e5e7eb', transition: 'border-color .15s, background .15s' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#1a1a2e'; (e.currentTarget as HTMLElement).style.background = '#f9fafb'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#e5e7eb'; (e.currentTarget as HTMLElement).style.background = '#fff'; }}>
+          style={{ display: 'block', padding: '13px', background: 'var(--bg-card)', color: 'var(--text-main)', textDecoration: 'none', borderRadius: 12, fontWeight: 700, fontSize: 15, textAlign: 'center', border: '2px solid var(--border)', transition: 'border-color .15s, background .15s' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--text-main)'; (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.background = 'var(--bg-card)'; }}>
           Create a free account
         </a>
 

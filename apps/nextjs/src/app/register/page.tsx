@@ -1,12 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase-client';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 
 type Step = 'form' | 'payment' | 'done';
 
-const inputStyle: React.CSSProperties = { width:'100%', padding:'11px 14px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:14, boxSizing:'border-box', outline:'none', fontFamily:'inherit', transition:'border-color .15s', backgroundColor: '#fff', color: '#1a1a2e' };
+const inputStyle: React.CSSProperties = { width:'100%', padding:'11px 14px', borderRadius:10, border: '1.5px solid var(--border)', fontSize:14, boxSizing:'border-box', outline:'none', fontFamily:'inherit', transition:'border-color .15s', backgroundColor: 'var(--bg-hover)', color: 'var(--text-main)' };
 const primaryBtn: React.CSSProperties = { width:'100%', background:'linear-gradient(135deg,#e67e22,#d35400)', color:'#fff', border:'none', borderRadius:10, padding:'13px', fontWeight:700, fontSize:15, cursor:'pointer', fontFamily:'inherit' };
 
 export default function RegisterPage() {
@@ -24,6 +24,14 @@ export default function RegisterPage() {
     const val = k === 'restaurant_slug' ? e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,'') : e.target.value;
     setForm(p => ({ ...p, [k]: val }));
   };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('menuly_dark') !== '0') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, []);
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -77,56 +85,56 @@ export default function RegisterPage() {
 
   // ── Step: Form ─────────────────────────────────────────────────────────────
   if (step === 'form') return (
-    <div style={{ minHeight:'100dvh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(135deg,#1a1a2e,#16213e)', padding:20 }}>
-      <div style={{ background:'#fff', borderRadius:20, padding:40, width:'100%', maxWidth:420, boxShadow:'0 20px 60px rgba(0,0,0,.3)' }}>
+    <div style={{ minHeight:'100dvh', display:'flex', alignItems:'center', justifyContent:'center', background: 'var(--bg-main)', padding:20 }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius:20, padding:40, width:'100%', maxWidth:420, boxShadow:'0 20px 60px rgba(0,0,0,.3)' }}>
         <div style={{ textAlign:'center', marginBottom:28 }}>
           <div style={{ fontSize:40, marginBottom:8 }}>🍽️</div>
-          <h1 style={{ fontSize:26, fontWeight:800, margin:'0 0 4px', color:'#1a1a2e' }}>Join Menuly</h1>
-          <p style={{ color:'#6b7280', fontSize:14, margin:0 }}>Your digital QR menu, live in minutes</p>
+          <h1 style={{ fontSize:26, fontWeight:800, margin:'0 0 4px', color: 'var(--text-main)' }}>Join Menuly</h1>
+          <p style={{ color: 'var(--text-sub)', fontSize:14, margin:0 }}>Your digital QR menu, live in minutes</p>
         </div>
 
         <form onSubmit={handleRegister} style={{ display:'flex', flexDirection:'column', gap:14 }}>
           <div>
-            <label style={{ fontSize:12, fontWeight:600, color:'#374151', display:'block', marginBottom:4 }}>Restaurant Name</label>
+            <label style={{ fontSize:12, fontWeight:600, color: 'var(--text-main)', display:'block', marginBottom:4 }}>Restaurant Name</label>
             <input style={inputStyle} placeholder="Spice Garden" value={form.restaurant_name} onChange={set('restaurant_name')} required minLength={2} />
           </div>
           <div>
-            <label style={{ fontSize:12, fontWeight:600, color:'#374151', display:'block', marginBottom:4 }}>Menu URL Slug</label>
-            <div style={{ display:'flex', alignItems:'center', border:'1.5px solid #e5e7eb', borderRadius:10, overflow:'hidden' }}>
-              <span style={{ padding:'11px 12px', background:'#f9fafb', color:'#9ca3af', fontSize:13, flexShrink:0 }}>menuly.shop/menu/</span>
+            <label style={{ fontSize:12, fontWeight:600, color: 'var(--text-main)', display:'block', marginBottom:4 }}>Menu URL Slug</label>
+            <div style={{ display:'flex', alignItems:'center', border: '1.5px solid var(--border)', borderRadius:10, overflow:'hidden' }}>
+              <span style={{ padding:'11px 12px', background: 'var(--bg-hover)', color: 'var(--text-muted)', fontSize:13, flexShrink:0 }}>menuly.shop/menu/</span>
               <input style={{ ...inputStyle, border:'none', borderRadius:0, flex:1 }} placeholder="spice-garden" value={form.restaurant_slug} onChange={set('restaurant_slug')} required minLength={2} />
             </div>
           </div>
           <div>
-            <label style={{ fontSize:12, fontWeight:600, color:'#374151', display:'block', marginBottom:4 }}>Email</label>
+            <label style={{ fontSize:12, fontWeight:600, color: 'var(--text-main)', display:'block', marginBottom:4 }}>Email</label>
             <input style={inputStyle} type="email" placeholder="you@restaurant.com" value={form.email} onChange={set('email')} required />
           </div>
           <div>
-            <label style={{ fontSize:12, fontWeight:600, color:'#374151', display:'block', marginBottom:4 }}>Password</label>
+            <label style={{ fontSize:12, fontWeight:600, color: 'var(--text-main)', display:'block', marginBottom:4 }}>Password</label>
             <div style={{ position: 'relative' }}>
               <input style={{...inputStyle, paddingRight: 40}} type={showPassword ? "text" : "password"} placeholder="min. 8 characters" value={form.password} onChange={set('password')} required minLength={8} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex' }}>
+              <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, display: 'flex' }}>
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
           <div>
-            <label style={{ fontSize:12, fontWeight:600, color:'#374151', display:'block', marginBottom:4 }}>Confirm Password</label>
+            <label style={{ fontSize:12, fontWeight:600, color: 'var(--text-main)', display:'block', marginBottom:4 }}>Confirm Password</label>
             <div style={{ position: 'relative' }}>
               <input style={{...inputStyle, paddingRight: 40}} type={showConfirmPassword ? "text" : "password"} placeholder="Repeat password" value={form.confirm_password} onChange={set('confirm_password')} required minLength={8} />
-              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex' }}>
+              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, display: 'flex' }}>
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
-          {error && <div style={{ background:'#fef2f2', border:'1px solid #fca5a5', color:'#dc2626', padding:'10px 14px', borderRadius:8, fontSize:13 }}>{error}</div>}
+          {error && <div style={{ background: 'var(--bg-error)', border: '1px solid var(--border-error)', color: 'var(--text-error)', padding:'10px 14px', borderRadius:8, fontSize:13 }}>{error}</div>}
           <button type="submit" style={primaryBtn} disabled={loading}>{loading ? 'Creating account…' : 'Create Free Account'}</button>
         </form>
 
-        <div style={{ marginTop:20, padding:16, background:'#f0fdf4', borderRadius:10, fontSize:13, color:'#166534' }}>
+        <div style={{ marginTop:20, padding:16, background: 'var(--bg-success)', borderRadius:10, fontSize:13, color: 'var(--text-success)' }}>
           ✅ <strong>7-day free trial</strong> — no credit card required to start
         </div>
-        <p style={{ textAlign:'center', marginTop:14, fontSize:13, color:'#6b7280' }}>
+        <p style={{ textAlign:'center', marginTop:14, fontSize:13, color: 'var(--text-sub)' }}>
           Already have an account? <a href="/admin" style={{ color:'#e67e22', fontWeight:600 }}>Sign in</a>
         </p>
       </div>
@@ -135,31 +143,31 @@ export default function RegisterPage() {
 
   // ── Step: Payment ──────────────────────────────────────────────────────────
   if (step === 'payment') return (
-    <div style={{ minHeight:'100dvh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(135deg,#1a1a2e,#16213e)', padding:20 }}>
-      <div style={{ background:'#fff', borderRadius:20, padding:40, width:'100%', maxWidth:420, boxShadow:'0 20px 60px rgba(0,0,0,.3)', textAlign:'center' }}>
+    <div style={{ minHeight:'100dvh', display:'flex', alignItems:'center', justifyContent:'center', background: 'var(--bg-main)', padding:20 }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius:20, padding:40, width:'100%', maxWidth:420, boxShadow:'0 20px 60px rgba(0,0,0,.3)', textAlign:'center' }}>
         <div style={{ fontSize:56, marginBottom:12 }}>🎉</div>
-        <h2 style={{ fontSize:22, fontWeight:800, margin:'0 0 8px', color:'#1a1a2e' }}>Account Created!</h2>
-        <p style={{ color:'#6b7280', fontSize:14, lineHeight:1.6, marginBottom:24 }}>
+        <h2 style={{ fontSize:22, fontWeight:800, margin:'0 0 8px', color: 'var(--text-main)' }}>Account Created!</h2>
+        <p style={{ color: 'var(--text-sub)', fontSize:14, lineHeight:1.6, marginBottom:24 }}>
           Your 7-day free trial is now active. Set up autopay now to avoid interruption — you won&apos;t be charged until the trial ends.
         </p>
-        <div style={{ background:'#f8fafc', borderRadius:12, padding:16, marginBottom:24, textAlign:'left' }}>
+        <div style={{ background: 'var(--bg-hover)', borderRadius:12, padding:16, marginBottom:24, textAlign:'left' }}>
           <div style={{ display:'flex', justifyContent:'space-between', fontSize:14, marginBottom:8 }}>
-            <span style={{ color:'#6b7280' }}>Plan</span><strong>Menuly Pro</strong>
+            <span style={{ color: 'var(--text-sub)' }}>Plan</span><strong>Menuly Pro</strong>
           </div>
           <div style={{ display:'flex', justifyContent:'space-between', fontSize:14, marginBottom:8 }}>
-            <span style={{ color:'#6b7280' }}>Price</span><strong>₹299/month</strong>
+            <span style={{ color: 'var(--text-sub)' }}>Price</span><strong>₹299/month</strong>
           </div>
           <div style={{ display:'flex', justifyContent:'space-between', fontSize:14 }}>
-            <span style={{ color:'#6b7280' }}>First charge</span><strong style={{ color:'#15803d' }}>After 7-day trial</strong>
+            <span style={{ color: 'var(--text-sub)' }}>First charge</span><strong style={{ color: 'var(--text-success)' }}>After 7-day trial</strong>
           </div>
         </div>
-        {error && <div style={{ background:'#fef2f2', border:'1px solid #fca5a5', color:'#dc2626', padding:'10px 14px', borderRadius:8, fontSize:13, marginBottom:16 }}>{error}</div>}
-        {paymentStatus === 'verifying' && <p style={{ color:'#6b7280', fontSize:14 }}>Verifying payment…</p>}
+        {error && <div style={{ background: 'var(--bg-error)', border: '1px solid var(--border-error)', color: 'var(--text-error)', padding:'10px 14px', borderRadius:8, fontSize:13, marginBottom:16 }}>{error}</div>}
+        {paymentStatus === 'verifying' && <p style={{ color: 'var(--text-sub)', fontSize:14 }}>Verifying payment…</p>}
         <button onClick={handleStartPayment} style={primaryBtn} disabled={loading || paymentStatus === 'verifying'}>
           {loading ? 'Opening checkout…' : '⚡ Setup Autopay — ₹299/month'}
         </button>
         <button onClick={() => { setPaymentStatus('skipped'); setStep('done'); }}
-          style={{ marginTop:12, background:'none', border:'none', color:'#9ca3af', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>
+          style={{ marginTop:12, background:'none', border:'none', color: 'var(--text-muted)', fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>
           Skip for now — activate from dashboard
         </button>
       </div>
@@ -168,13 +176,13 @@ export default function RegisterPage() {
 
   // ── Step: Done ─────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight:'100dvh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(135deg,#1a1a2e,#16213e)', padding:20 }}>
-      <div style={{ background:'#fff', borderRadius:20, padding:40, width:'100%', maxWidth:420, boxShadow:'0 20px 60px rgba(0,0,0,.3)', textAlign:'center' }}>
+    <div style={{ minHeight:'100dvh', display:'flex', alignItems:'center', justifyContent:'center', background: 'var(--bg-main)', padding:20 }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius:20, padding:40, width:'100%', maxWidth:420, boxShadow:'0 20px 60px rgba(0,0,0,.3)', textAlign:'center' }}>
         <div style={{ fontSize:64, marginBottom:12 }}>{paymentStatus === 'done' ? '🎊' : '✅'}</div>
-        <h2 style={{ fontSize:22, fontWeight:800, margin:'0 0 8px', color:'#1a1a2e' }}>
+        <h2 style={{ fontSize:22, fontWeight:800, margin:'0 0 8px', color: 'var(--text-main)' }}>
           {paymentStatus === 'done' ? 'You\'re all set!' : 'Welcome to Menuly!'}
         </h2>
-        <p style={{ color:'#6b7280', fontSize:14, lineHeight:1.6, marginBottom:28 }}>
+        <p style={{ color: 'var(--text-sub)', fontSize:14, lineHeight:1.6, marginBottom:28 }}>
           {paymentStatus === 'done'
             ? 'Autopay is active. Your menu is live and ready to share!'
             : 'Your 7-day trial is active. Activate autopay anytime from the billing section.'}
