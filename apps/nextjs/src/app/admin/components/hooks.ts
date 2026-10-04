@@ -37,3 +37,16 @@ export function useItems(token: string | undefined) {
     enabled: !!token,
   });
 }
+
+export function useBilling(token: string | undefined) {
+  return useQuery({
+    queryKey: ['billing'],
+    queryFn: async () => {
+      if (!token) return null;
+      const res = await apiFetch(token, '/api/admin/billing');
+      if (!res || res.error) return null;
+      return res as Record<string, unknown>;
+    },
+    enabled: !!token,
+  });
+}

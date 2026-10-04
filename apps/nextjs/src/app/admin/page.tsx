@@ -98,6 +98,9 @@ export default function AdminPage() {
   const prefetchItems = () => {
     if (token) queryClient.prefetchQuery({ queryKey: ['items'], queryFn: async () => { const res = await apiFetch(token!, '/api/admin/items'); return Array.isArray(res) ? res : []; } });
   };
+  const prefetchBilling = () => {
+    if (token) queryClient.prefetchQuery({ queryKey: ['billing'], queryFn: async () => { const res = await apiFetch(token!, '/api/admin/billing'); return res && !res.error ? res : null; } });
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -153,7 +156,7 @@ export default function AdminPage() {
             { id: 'categories', label: 'Categories', icon: <LayoutDashboard size={18} />, onHover: prefetchCategories },
             { id: 'items', label: 'Menu Items', icon: <List size={18} />, onHover: () => { prefetchCategories(); prefetchItems(); } },
             { id: 'settings', label: 'Settings & QR', icon: <Settings size={18} /> },
-            { id: 'billing', label: 'Billing', icon: <CreditCard size={18} /> },
+            { id: 'billing', label: 'Billing', icon: <CreditCard size={18} />, onHover: prefetchBilling },
           ].map(t => (
             <button
               key={t.id}

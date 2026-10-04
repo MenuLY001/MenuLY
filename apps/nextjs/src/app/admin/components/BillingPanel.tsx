@@ -1,24 +1,18 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useToast, BRAND, btnP, Spinner, Modal, apiFetch, fmtDate, daysLeft } from './shared';
+import { useQueryClient } from '@tanstack/react-query';
+import { useBilling } from './hooks';
 
 export function BillingPanel({ token, toast }: { token: string; toast: ReturnType<typeof useToast> }) {
-  const [billing, setBilling] = useState<Record<string, unknown> | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: billing, isLoading: loading } = useBilling(token);
   const [actionLoading, setActionLoading] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const load = () => setRefreshKey(k => k + 1);
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.resolve().then(() => { if (!cancelled) setLoading(true); });
-    apiFetch(token, '/api/admin/billing')
-      .then(d => { if (!cancelled) setBilling(d && !d.error ? d : null); })
-      .catch(() => { if (!cancelled) setBilling(null); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [token, refreshKey]);
+  const load = () => {
+    queryClient.invalidateQueries({ queryKey: ['billing'] });
+  };
 
   const status = (billing?.status as string) ?? '';
   const sub = billing?.subscription as Record<string, unknown> | null;
@@ -28,11 +22,11 @@ export function BillingPanel({ token, toast }: { token: string; toast: ReturnTyp
   const hasActiveSub = ['authenticated', 'active'].includes((sub?.status as string) ?? '');
   const cancelPending = sub?.cancel_at_period_end as boolean;
   const SS: Record<string, { bg: string; color: string; border: string }> = {
-    active:    { bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0' },
-    trialing:  { bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
-    past_due:  { bg: '#fffbeb', color: '#b45309', border: '#fde68a' },
-    suspended: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
-    cancelled: { bg: '#f9fafb', color: 'var(--text-sub)', border: '#e5e7eb' },
+    active:    { bg: 'var(--bg-success)', color: 'var(--text-success)', border: 'var(--border-success, var(--border))' },
+    trialing:  { bg: 'var(--bg-info)', color: 'var(--text-info)', border: 'var(--border-info)' },
+    past_due:  { bg: 'var(--bg-warning)', color: 'var(--text-warning)', border: 'var(--border-warning)' },
+    suspended: { bg: 'var(--bg-error)', color: 'var(--text-error)', border: 'var(--border-error)' },
+    cancelled: { bg: 'var(--bg-hover)', color: 'var(--text-sub)', border: 'var(--border)' },
   };
   const ss = SS[status] ?? SS.active;
 
@@ -132,13 +126,13 @@ export function BillingPanel({ token, toast }: { token: string; toast: ReturnTyp
           {payments.length > 0 ? (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-                <thead><tr>{['Date', 'Amount', 'Status', 'Ref'].map(h => <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-sub)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', borderBottom: '2px solid #f0f2f8' }}>{h}</th>)}</tr></thead>
+                <thead><tr>{['Date', 'Amount', 'Status', 'Ref'].map(h => <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-sub)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', borderBottom: '2px solid var(--border)' }}>{h}</th>)}</tr></thead>
                 <tbody>
                   {payments.map((p, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #f0f2f8' }}>
-                      <td style={{ padding: '14px 12px', color: '#374151', fontWeight: 500 }}>{fmtDate(p.created_at as string)}</td>
+                    <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '14px 12px', color: 'var(--text-main)', fontWeight: 500 }}>{fmtDate(p.created_at as string)}</td>
                       <td style={{ padding: '14px 12px', color: 'var(--text-main)', fontWeight: 700 }}>₹{Math.round((p.amount_paise as number) / 100)}</td>
-                      <td style={{ padding: '14px 12px' }}><span style={{ color: p.status === 'captured' ? '#15803d' : '#dc2626', fontWeight: 700, background: p.status === 'captured' ? '#f0fdf4' : '#fef2f2', padding: '4px 8px', borderRadius: 6 }}>{p.status === 'captured' ? '✓ Paid' : '✕ Failed'}</span></td>
+                      <td style={{ padding: '14px 12px' }}><span style={{ color: p.status === 'captured' ? 'var(--text-success)' : 'var(--text-error)', fontWeight: 700, background: p.status === 'captured' ? 'var(--bg-success)' : 'var(--bg-error)', padding: '4px 8px', borderRadius: 6 }}>{p.status === 'captured' ? '✓ Paid' : '✕ Failed'}</span></td>
                       <td style={{ padding: '14px 12px', color: 'var(--text-sub)', fontFamily: 'monospace', fontSize: 12 }}>{(p.razorpay_payment_id as string)?.slice(0, 18) ?? '—'}</td>
                     </tr>
                   ))}
@@ -156,7 +150,7 @@ export function BillingPanel({ token, toast }: { token: string; toast: ReturnTyp
         <Modal title="Cancel Subscription?" onClose={() => setShowCancel(false)}>
           <p style={{ color: 'var(--text-sub)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>You will keep full access until the end of your current billing period. After that, your menu will be suspended.</p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <button onClick={() => setShowCancel(false)} style={{ padding: '10px 16px', borderRadius: 8, border: 'none', background: 'var(--bg-hover)', color: '#374151', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Keep Subscription</button>
+            <button onClick={() => setShowCancel(false)} style={{ padding: '10px 16px', borderRadius: 8, border: 'none', background: 'var(--bg-hover)', color: 'var(--text-main)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Keep Subscription</button>
             <button onClick={cancelSub} disabled={actionLoading} style={{ padding: '10px 16px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>{actionLoading ? 'Cancelling…' : 'Yes, Cancel'}</button>
           </div>
         </Modal>

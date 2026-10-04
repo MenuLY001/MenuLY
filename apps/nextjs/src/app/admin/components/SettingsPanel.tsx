@@ -3,40 +3,46 @@ import { useState, useEffect, useRef } from 'react';
 import { type Restaurant } from './types';
 import { useToast, BRAND, inp, btnP, btnG, lbl, Spinner, apiFetch } from './shared';
 import { Copy, ExternalLink, Share2, Download } from 'lucide-react';
+import { useRestaurant } from './hooks';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: string; toast: ReturnType<typeof useToast>; onRestaurantUpdate: (r: Restaurant) => void }) {
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [name, setName] = useState('');
-  const [themeColor, setThemeColor] = useState('#e67e22');
-  const [logoUrl, setLogoUrl] = useState('');
-  const [menuTemplate, setMenuTemplate] = useState<'classic' | 'menuly-dark'>('classic');
+  const { data: restaurant, isLoading: loading } = useRestaurant(token);
+
+  if (loading) return <Spinner />;
+  if (!restaurant) return null;
+
+  return <SettingsForm restaurant={restaurant} token={token} toast={toast} onRestaurantUpdate={onRestaurantUpdate} />;
+}
+
+function SettingsForm({ restaurant, token, toast, onRestaurantUpdate }: { restaurant: Restaurant; token: string; toast: ReturnType<typeof useToast>; onRestaurantUpdate: (r: Restaurant) => void }) {
+  const queryClient = useQueryClient();
+  const [name, setName] = useState(restaurant.name);
+  const [themeColor, setThemeColor] = useState(restaurant.theme_color ?? '#e67e22');
+  const [logoUrl, setLogoUrl] = useState(restaurant.logo_url ?? '');
+  const [menuTemplate, setMenuTemplate] = useState<'classic' | 'menuly-dark'>((restaurant.menu_template as 'classic' | 'menuly-dark') ?? 'classic');
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [qrMenuUrl, setQrMenuUrl] = useState('');
+  const qrMenuUrl = typeof window !== 'undefined' ? `${window.location.origin}/menu/${restaurant.slug}` : '';
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    apiFetch(token, '/api/admin/restaurant').then(async (r: Restaurant) => {
-      if (!r || r.id === undefined) { setLoading(false); return; }
-      setRestaurant(r); setName(r.name); setThemeColor(r.theme_color ?? '#e67e22'); setLogoUrl(r.logo_url ?? '');
-      setMenuTemplate((r.menu_template as 'classic' | 'menuly-dark') ?? 'classic');
-      const menuUrl = `${window.location.origin}/menu/${r.slug}`;
-      setQrMenuUrl(menuUrl);
+    
+    const genQR = async () => {
       try {
         const QRCodeMod = await import('qrcode');
         const QRCode = (QRCodeMod as unknown as { toDataURL: typeof import('qrcode').toDataURL }).toDataURL
           ?? (QRCodeMod.default as unknown as { toDataURL: typeof import('qrcode').toDataURL })?.toDataURL
           ?? (QRCodeMod as unknown as typeof import('qrcode')).toDataURL;
-        const dataUrl = await QRCode(menuUrl, { width: 512, margin: 2, errorCorrectionLevel: 'H' });
+        const dataUrl = await QRCode(qrMenuUrl, { width: 512, margin: 2, errorCorrectionLevel: 'H' });
         setQrDataUrl(dataUrl);
       } catch (err) {
         console.error('QR generation failed:', err);
       }
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, [token]);
+    };
+    genQR();
+  }, [qrMenuUrl]);
 
   const uploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -53,7 +59,8 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
     e.preventDefault(); setSaving(true);
     try {
       const u = await apiFetch(token, '/api/admin/restaurant', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim(), theme_color: themeColor, logo_url: logoUrl || undefined, menu_template: menuTemplate }) });
-      setRestaurant(u); onRestaurantUpdate(u); toast.success('Settings saved!');
+      queryClient.setQueryData(['restaurant'], u);
+      onRestaurantUpdate(u); toast.success('Settings saved!');
     } catch { toast.error('Failed to save settings'); } finally { setSaving(false); }
   };
 
@@ -168,8 +175,6 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
 
   const hasChanges = restaurant && (name !== restaurant.name || themeColor !== (restaurant.theme_color ?? '#e67e22') || logoUrl !== (restaurant.logo_url ?? '') || menuTemplate !== (restaurant.menu_template ?? 'classic'));
 
-  if (loading) return <Spinner />;
-
   return (
     <div className="panel">
       <div><h1 className="panel__title">Restaurant Settings</h1><p className="panel__subtitle">Manage your restaurant profile and menu QR code</p></div>
@@ -238,10 +243,10 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>Choose how your public menu looks to customers.</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {/* Classic */}
-              <button type="button" onClick={() => setMenuTemplate('classic')} style={{ display: 'flex', flexDirection: 'column', border: `2px solid ${menuTemplate === 'classic' ? BRAND : '#e5e7eb'}`, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', background: '#fafafa', padding: 0, fontFamily: 'inherit', position: 'relative', boxShadow: menuTemplate === 'classic' ? `0 0 0 3px ${BRAND}30` : 'none', transition: 'all .2s' }}>
+              <button type="button" onClick={() => setMenuTemplate('classic')} style={{ display: 'flex', flexDirection: 'column', border: `2px solid ${menuTemplate === 'classic' ? BRAND : 'var(--border)'}`, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', background: 'var(--bg-card)', padding: 0, fontFamily: 'inherit', position: 'relative', boxShadow: menuTemplate === 'classic' ? `0 0 0 3px ${BRAND}30` : 'none', transition: 'all .2s' }}>
                 <div style={{ height: 120, padding: 10, background: 'var(--bg-main)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><div style={{ width: 18, height: 18, borderRadius: '50%', background: '#e5e7eb' }} /><div style={{ height: 7, borderRadius: 4, background: '#e5e7eb', width: '70%' }} /></div>
-                  {[1, 2, 3].map(i => <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #f0f0f0', paddingBottom: 4 }}><div style={{ width: 24, height: 24, borderRadius: 6, background: '#e5e7eb' }} /><div style={{ flex: 1 }}><div style={{ height: 7, borderRadius: 4, background: '#e5e7eb', width: '80%' }} /><div style={{ height: 5, borderRadius: 4, background: '#e5e7eb', width: '50%', marginTop: 4 }} /></div></div>)}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><div style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--bg-hover)' }} /><div style={{ height: 7, borderRadius: 4, background: 'var(--bg-hover)', width: '70%' }} /></div>
+                  {[1, 2, 3].map(i => <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid var(--border)', paddingBottom: 4 }}><div style={{ width: 24, height: 24, borderRadius: 6, background: 'var(--bg-hover)' }} /><div style={{ flex: 1 }}><div style={{ height: 7, borderRadius: 4, background: 'var(--bg-hover)', width: '80%' }} /><div style={{ height: 5, borderRadius: 4, background: 'var(--bg-hover)', width: '50%', marginTop: 4 }} /></div></div>)}
                 </div>
                 <div style={{ padding: '10px 12px 12px', textAlign: 'left' }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-main)' }}>Classic</div>
@@ -250,7 +255,7 @@ export function SettingsPanel({ token, toast, onRestaurantUpdate }: { token: str
                 {menuTemplate === 'classic' && <div style={{ position: 'absolute', top: 8, right: 8, width: 22, height: 22, background: BRAND, borderRadius: '50%', color: '#fff', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</div>}
               </button>
               {/* Menuly Dark */}
-              <button type="button" onClick={() => setMenuTemplate('menuly-dark')} style={{ display: 'flex', flexDirection: 'column', border: `2px solid ${menuTemplate === 'menuly-dark' ? BRAND : '#e5e7eb'}`, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', background: '#fafafa', padding: 0, fontFamily: 'inherit', position: 'relative', boxShadow: menuTemplate === 'menuly-dark' ? `0 0 0 3px ${BRAND}30` : 'none', transition: 'all .2s' }}>
+              <button type="button" onClick={() => setMenuTemplate('menuly-dark')} style={{ display: 'flex', flexDirection: 'column', border: `2px solid ${menuTemplate === 'menuly-dark' ? BRAND : 'var(--border)'}`, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', background: 'var(--bg-card)', padding: 0, fontFamily: 'inherit', position: 'relative', boxShadow: menuTemplate === 'menuly-dark' ? `0 0 0 3px ${BRAND}30` : 'none', transition: 'all .2s' }}>
                 <div style={{ height: 120, padding: 10, background: '#0f0f13', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}><div style={{ width: 16, height: 16, borderRadius: 4, background: BRAND }} /><div style={{ height: 7, borderRadius: 4, background: 'rgba(255,255,255,.15)', width: '70%' }} /></div>
                   <div style={{ height: 10, borderRadius: 5, background: 'rgba(255,255,255,.1)', marginBottom: 2 }} />

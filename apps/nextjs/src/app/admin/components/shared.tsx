@@ -20,10 +20,10 @@ export function useToast() {
 
 // ─── Style constants ──────────────────────────────────────────────────────────
 export const BRAND = '#e67e22';
-export const inp: React.CSSProperties  = { width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', background: '#f9fafb', color: 'var(--text-main)' };
+export const inp: React.CSSProperties  = { width: '100%', padding: '10px 12px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', background: 'var(--bg-hover)', color: 'var(--text-main)' };
 export const btnP: React.CSSProperties = { padding: '10px 18px', background: BRAND, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' };
-export const btnG: React.CSSProperties = { padding: '8px 14px', background: 'var(--bg-hover)', color: '#374151', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' };
-export const lbl: React.CSSProperties  = { display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 };
+export const btnG: React.CSSProperties = { padding: '8px 14px', background: 'var(--bg-hover)', color: 'var(--text-main)', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' };
+export const lbl: React.CSSProperties  = { display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-main)', marginBottom: 6 };
 
 export const fmtDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 export const daysLeft = (iso: string) => Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000));
@@ -54,10 +54,10 @@ export function FormModal({ title, onClose, children }: { title: string; onClose
     <>
       <style>{`
         .f-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .f-modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 640px; display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .f-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e5e7eb; }
+        .f-modal-content { background: var(--bg-card); border-radius: 16px; width: 100%; max-width: 640px; display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .f-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
         .f-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
-        .f-modal-footer { padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 12px; background: #f9fafb; }
+        .f-modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; background: var(--bg-hover); }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @media (max-width: 600px) {
           .f-modal-overlay { padding: 0; align-items: flex-end; }
